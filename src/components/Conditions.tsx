@@ -9,9 +9,10 @@ const SOCIAL_SAIL_MESSAGE = "(Social Sail: max 5 people, incl. 2nd skipper/exp c
 // Helper to convert knots to MPH
 const knotsToMph = (knots: number) => Math.round(knots * KNOTS_TO_MPH);
 
-// Helper to format date/time
-const formatTime = (isoString: string) => new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-const formatDate = (isoString: string) => new Date(isoString).toLocaleDateString([], { month: 'short', day: 'numeric' });
+// Helper to format date/time in US Eastern Time
+const TIMEZONE = 'America/New_York';
+const formatTime = (isoString: string) => new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
+const formatDate = (isoString: string) => new Date(isoString).toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: TIMEZONE });
 
 const getWindSeverityClass = (windKnots: number) => {
   if (windKnots < 5) return 'border-blue-400 dark:border-blue-800 bg-blue-100 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200'; // Pale Blue: Weak wind

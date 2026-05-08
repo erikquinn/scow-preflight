@@ -27,7 +27,7 @@ export async function getTideData(): Promise<TideData | null> {
       return `${year}${month}${day} ${hours}:${minutes}`;
     };
 
-    const apiUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${formatDateTime(startDate)}&end_date=${formatDateTime(endDate)}&station=${stationId}&product=predictions&datum=MLLW&time_zone=lst_ldt&units=english&format=json&interval=hilo`;
+    const apiUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${formatDateTime(startDate)}&end_date=${formatDateTime(endDate)}&station=${stationId}&product=predictions&datum=MLLW&time_zone=gmt&units=english&format=json&interval=hilo`;
     
     const res = await fetch(apiUrl, { next: { revalidate: 300 } });
     if (!res.ok) throw new Error('Failed to fetch NOAA tide predictions');
@@ -38,7 +38,8 @@ export async function getTideData(): Promise<TideData | null> {
     }
 
     const predictions: TidePrediction[] = data.predictions.map((p: any) => ({
-      time: p.t,
+      // Append 'Z' since we requested GMT time_zone from NOAA
+      time: new Date(p.t.replace(' ', 'T') + 'Z').toISOString(),
       value: parseFloat(p.v),
       type: p.type,
     }));
