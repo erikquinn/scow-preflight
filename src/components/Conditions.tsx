@@ -299,7 +299,8 @@ export default async function Conditions() {
               })
               .map((period, index) => renderWindCell(
                 getRelativeHourLabel(period.startTime),
-                formatTime(period.startTime).toLowerCase().replace(':00', '').replace(' ', ''),
+                // e.g. "05:00 AM" -> "5 AM"
+                formatTime(period.startTime).replace(':00', '').replace(/^0/, ''),
                 period.windSpeed,
                 period.windGust,
                 period.startTime,
