@@ -88,15 +88,15 @@ export default function Checklists() {
         const isComplete = totalItems === checkedCount;
 
         return (
-          <div key={category.id} className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
-            <div className={`p-4 border-b transition-colors duration-300 ${isComplete ? 'bg-green-50 border-green-200' : 'bg-slate-50 border-slate-200'}`}>
+          <div key={category.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-slate-300 dark:border-slate-800 overflow-hidden transition-colors duration-300">
+            <div className={`p-4 border-b transition-colors duration-300 ${isComplete ? 'bg-green-100 dark:bg-green-950/30 border-green-300 dark:border-green-900' : 'bg-slate-100 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700'}`}>
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">{category.title}</h3>
-                  <p className="text-sm text-slate-500 mt-1">{category.description}</p>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{category.title}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 font-medium">{category.description}</p>
                 </div>
                 <div className="text-right">
-                  <span className={`text-sm font-semibold px-3 py-1 rounded-full ${isComplete ? 'bg-green-200 text-green-800' : 'bg-slate-200 text-slate-700'}`}>
+                  <span className={`text-sm font-bold px-3 py-1 rounded-full ${isComplete ? 'bg-green-600 dark:bg-green-800 text-white dark:text-green-100' : 'bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-300'}`}>
                     {checkedCount} / {totalItems}
                   </span>
                 </div>
@@ -104,7 +104,7 @@ export default function Checklists() {
             </div>
             
             <div className="p-4">
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {category.items.map((item, index) => {
                   const key = `${category.id}-${index}`;
                   const isChecked = !!checkedItems[key];
@@ -112,23 +112,23 @@ export default function Checklists() {
                   return (
                     <li key={index} className="flex items-start">
                       <button 
-                        className="flex-shrink-0 mt-1 w-6 h-6 rounded border flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                        className="flex-shrink-0 mt-1 w-7 h-7 rounded border-2 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
                         onClick={() => toggleItem(category.id, index)}
                         aria-checked={isChecked}
                         role="checkbox"
                         style={{
-                          backgroundColor: isChecked ? '#1e3a8a' : 'white', // blue-900
-                          borderColor: isChecked ? '#1e3a8a' : '#cbd5e1' // slate-300
+                          backgroundColor: isChecked ? '#1e3a8a' : 'transparent', // blue-900
+                          borderColor: isChecked ? '#1e3a8a' : '#475569' // blue-900 : slate-600
                         }}
                       >
                         {isChecked && (
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
                           </svg>
                         )}
                       </button>
                       <span 
-                        className={`ml-3 cursor-pointer select-none transition-all duration-200 ${isChecked ? 'text-slate-400 line-through' : 'text-slate-700'}`}
+                        className={`ml-4 cursor-pointer select-none transition-all duration-200 text-lg ${isChecked ? 'text-slate-400 dark:text-slate-500 line-through italic' : 'text-slate-800 dark:text-slate-100 font-medium'}`}
                         onClick={() => toggleItem(category.id, index)}
                       >
                         {item}

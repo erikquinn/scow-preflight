@@ -91,7 +91,7 @@ export async function getWeatherData(): Promise<WeatherData | null> {
     return {
       retrievedAt: new Date().toISOString(),
       observationTime: latestObs?.timestamp || '',
-      forecastGeneratedAt: forecastData.properties.updated || '',
+      forecastGeneratedAt: forecastData.properties.generatedAt || forecastData.properties.updated || '',
 
       currentWindSpeed: latestObs ? mphToKnots(latestObs.windSpeed.value * 0.621371) : null,
       currentWindDirection: latestObs?.windDirection.value ?? null,
