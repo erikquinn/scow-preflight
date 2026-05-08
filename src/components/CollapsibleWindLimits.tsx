@@ -26,11 +26,11 @@ export default function CollapsibleWindLimits() {
                 <td className="py-3 pl-5 pr-3 w-32 align-top sm:align-middle">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full shrink-0 bg-blue-400 border border-blue-500 shadow-sm"></div>
-                    <span className="font-bold text-blue-900 dark:text-slate-200 whitespace-nowrap">&lt; 5 kts</span>
+                    <span className="font-bold text-blue-900 dark:text-slate-200 whitespace-nowrap">&lt; 10 kts</span>
                   </div>
                 </td>
                 <td className="py-3 px-3 w-24 text-xs font-semibold text-slate-500 dark:text-slate-400 align-top sm:align-middle hidden sm:table-cell">
-                  (&lt; 6 mph)
+                  (&lt; 12 mph)
                 </td>
                 <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium text-xs">
                   Weak Wind (consider whether a falling tide makes it risky to go out!)
@@ -40,11 +40,11 @@ export default function CollapsibleWindLimits() {
                 <td className="py-3 pl-5 pr-3 w-32 align-top sm:align-middle">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full shrink-0 bg-green-400 border border-green-500 shadow-sm"></div>
-                    <span className="font-bold text-blue-900 dark:text-slate-200 whitespace-nowrap">5 - 14 kts</span>
+                    <span className="font-bold text-blue-900 dark:text-slate-200 whitespace-nowrap">10 - 14 kts</span>
                   </div>
                 </td>
                 <td className="py-3 px-3 w-24 text-xs font-semibold text-slate-500 dark:text-slate-400 align-top sm:align-middle hidden sm:table-cell">
-                  (6 - 16 mph)
+                  (12 - 16 mph)
                 </td>
                 <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium">
                   Optimal Sailing Conditions ⛵

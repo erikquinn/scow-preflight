@@ -19,8 +19,8 @@ const getWindSeverityClass = (windKnots: number) => {
   // Dark-mode backgrounds use solid (no alpha) colors so they don't mix with
   // the section's parent background. Shades are kept deep (-900 / -950) so
   // the cells read as muted color hints rather than glowing swatches.
-  if (windKnots < 5) return 'border-blue-400 dark:border-blue-800 bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-200'; // Pale Blue: Weak wind
-  if (windKnots >= 5 && windKnots <= 14) return 'border-green-400 dark:border-green-800 bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-200'; // Green: Optimal
+  if (windKnots < 10) return 'border-blue-400 dark:border-blue-800 bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-200'; // Pale Blue: Weak wind
+  if (windKnots >= 10 && windKnots <= 14) return 'border-green-400 dark:border-green-800 bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-200'; // Green: Optimal
   if (windKnots >= 15 && windKnots <= 19) return 'border-yellow-400 dark:border-yellow-700 bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'; // Yellow: Restricted
   if (windKnots >= 20 && windKnots <= 24) return 'border-red-400 dark:border-red-800 bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-200';     // Red: No Flying Scots
   return 'border-black dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-gray-200'; // Black: All Prohibited (>= 25 knots)
@@ -37,14 +37,14 @@ const getPrecipSeverityClass = (precipPct: number) => {
 
 // Determine wind restriction for policy box
 const getPolicyRestriction = (maxWindKnots: number) => {
-  if (maxWindKnots < 5) {
+  if (maxWindKnots < 10) {
     return {
       color: 'bg-blue-700 dark:bg-blue-800 shadow-blue-200 dark:shadow-none',
       text: 'Weak Wind',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     };
   }
-  if (maxWindKnots >= 5 && maxWindKnots <= 14) {
+  if (maxWindKnots >= 10 && maxWindKnots <= 14) {
     return {
       color: 'bg-green-700 dark:bg-green-800 shadow-green-200 dark:shadow-none',
       text: 'Optimal Wind',
