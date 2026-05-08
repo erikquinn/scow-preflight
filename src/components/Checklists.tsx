@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 
 const checklistData = [
   {
@@ -75,8 +76,35 @@ const checklistData = [
 ];
 
 export default function Checklists() {
-  // Store the checked state of items in an object: { 'checkout-0': true, 'launch-2': false, ... }
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+    checkout: true,
+    launch: true,
+    'pre-takeoff': true,
+    'after-landing': true,
+    shutdown: true,
+  });
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Load from local storage on mount
+  useEffect(() => {
+    setIsMounted(true);
+    const saved = localStorage.getItem('scow-checklists-state');
+    if (saved) {
+      try {
+        setCheckedItems(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse checklist state");
+      }
+    }
+  }, []);
+
+  // Save to local storage whenever checked items change
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('scow-checklists-state', JSON.stringify(checkedItems));
+    }
+  }, [checkedItems, isMounted]);
 
   const toggleItem = (categoryId: string, itemIndex: number) => {
     const key = `${categoryId}-${itemIndex}`;
@@ -86,68 +114,104 @@ export default function Checklists() {
     }));
   };
 
-  return (
-    <div className="space-y-8">
-      {checklistData.map((category) => {
-        // Calculate progress
-        const totalItems = category.items.length;
-        const checkedCount = category.items.filter((_, index) => checkedItems[`${category.id}-${index}`]).length;
-        const isComplete = totalItems === checkedCount;
+  const toggleCategory = (categoryId: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
 
-        return (
-          <div key={category.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-md border border-slate-300 dark:border-slate-800 overflow-hidden transition-colors duration-300">
-            <div className={`p-4 border-b transition-colors duration-300 ${isComplete ? 'bg-green-100 dark:bg-green-950/30 border-green-300 dark:border-green-900' : 'bg-slate-100 dark:bg-slate-800/50 border-slate-300 dark:border-slate-700'}`}>
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">{category.title}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 font-medium">{category.description}</p>
+  const resetChecklists = () => {
+    if (window.confirm('Are you sure you want to uncheck all items?')) {
+      setCheckedItems({});
+    }
+  };
+
+  if (!isMounted) return null; // Avoid hydration mismatch
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end mb-4">
+        <button 
+          onClick={resetChecklists}
+          className="flex items-center gap-2 text-sm font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2 px-4 rounded-lg transition-colors"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Reset All Checklists
+        </button>
+      </div>
+      
+      <div className="space-y-6">
+        {checklistData.map((category) => {
+          // Calculate progress
+          const totalItems = category.items.length;
+          const checkedCount = category.items.filter((_, index) => checkedItems[`${category.id}-${index}`]).length;
+          const isComplete = totalItems === checkedCount;
+          const isExpanded = expandedCategories[category.id];
+
+          return (
+            <div key={category.id} className={`rounded-xl shadow-md border overflow-hidden transition-all duration-300 ${isComplete ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-800' : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800'}`}>
+              <div 
+                className={`p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-300 flex justify-between items-center ${isComplete ? 'border-b border-green-300/50 dark:border-green-800/50' : 'border-b border-slate-200 dark:border-slate-700'}`}
+                onClick={() => toggleCategory(category.id)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`p-1.5 rounded-full ${isComplete ? 'bg-green-200 dark:bg-green-800/60 text-green-700 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
+                    {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                  </div>
+                  <div>
+                    <h3 className={`text-xl font-bold ${isComplete ? 'text-green-900 dark:text-green-100' : 'text-slate-900 dark:text-slate-100'}`}>{category.title}</h3>
+                    <p className={`text-sm mt-1 font-medium ${isComplete ? 'text-green-700 dark:text-green-400' : 'text-slate-600 dark:text-slate-400'}`}>{category.description}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className={`text-sm font-bold px-3 py-1 rounded-full ${isComplete ? 'bg-green-600 dark:bg-green-800 text-white dark:text-green-100' : 'bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-300'}`}>
+                <div className="text-right shrink-0 ml-4">
+                  <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${isComplete ? 'bg-green-500 dark:bg-green-600 text-white shadow-sm' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300'}`}>
                     {checkedCount} / {totalItems}
                   </span>
                 </div>
               </div>
+              
+              {isExpanded && (
+                <div className="p-5">
+                  <ul className="space-y-4">
+                    {category.items.map((item, index) => {
+                      const key = `${category.id}-${index}`;
+                      const isChecked = !!checkedItems[key];
+                      
+                      return (
+                        <li key={index} className="flex items-start">
+                          <button 
+                            className="flex-shrink-0 mt-1 w-7 h-7 rounded border-2 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
+                            onClick={() => toggleItem(category.id, index)}
+                            aria-checked={isChecked}
+                            role="checkbox"
+                            style={{
+                              backgroundColor: isChecked ? (isComplete ? '#166534' : '#1e3a8a') : 'transparent', // green-800 : blue-900
+                              borderColor: isChecked ? (isComplete ? '#166534' : '#1e3a8a') : '#475569' // green-800 : blue-900 : slate-600
+                            }}
+                          >
+                            {isChecked && (
+                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </button>
+                          <span 
+                            className={`ml-4 cursor-pointer select-none transition-all duration-200 text-lg ${isChecked ? 'text-slate-400 dark:text-slate-500 line-through italic' : (isComplete ? 'text-green-900 dark:text-green-100 font-medium' : 'text-slate-800 dark:text-slate-100 font-medium')}`}
+                            onClick={() => toggleItem(category.id, index)}
+                          >
+                            {item}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
             </div>
-
-            <div className="p-4">
-              <ul className="space-y-4">
-                {category.items.map((item, index) => {
-                  const key = `${category.id}-${index}`;
-                  const isChecked = !!checkedItems[key];
-
-                  return (
-                    <li key={index} className="flex items-start">
-                      <button
-                        className="flex-shrink-0 mt-1 w-7 h-7 rounded border-2 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
-                        onClick={() => toggleItem(category.id, index)}
-                        aria-checked={isChecked}
-                        role="checkbox"
-                        style={{
-                          backgroundColor: isChecked ? '#1e3a8a' : 'transparent', // blue-900
-                          borderColor: isChecked ? '#1e3a8a' : '#475569' // blue-900 : slate-600
-                        }}
-                      >
-                        {isChecked && (
-                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
-                      <span
-                        className={`ml-4 cursor-pointer select-none transition-all duration-200 text-lg ${isChecked ? 'text-slate-400 dark:text-slate-500 line-through italic' : 'text-slate-800 dark:text-slate-100 font-medium'}`}
-                        onClick={() => toggleItem(category.id, index)}
-                      >
-                        {item}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
