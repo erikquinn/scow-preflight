@@ -16,11 +16,14 @@ const formatTime = (isoString: string) => new Date(isoString).toLocaleTimeString
 const formatDate = (isoString: string) => new Date(isoString).toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: TIMEZONE });
 
 const getWindSeverityClass = (windKnots: number) => {
-  if (windKnots < 5) return 'border-blue-400 dark:border-blue-800 bg-blue-100 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200'; // Pale Blue: Weak wind
-  if (windKnots >= 5 && windKnots <= 14) return 'border-green-400 dark:border-green-800 bg-green-100 dark:bg-green-950/40 text-green-900 dark:text-green-200'; // Green: Optimal
-  if (windKnots >= 15 && windKnots <= 19) return 'border-yellow-400 dark:border-yellow-800 bg-yellow-100 dark:bg-yellow-950/40 text-yellow-900 dark:text-yellow-200'; // Yellow: Restricted
-  if (windKnots >= 20 && windKnots <= 24) return 'border-red-400 dark:border-red-800 bg-red-100 dark:bg-red-950/40 text-red-900 dark:text-red-200';     // Red: No Flying Scots
-  return 'border-black dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-gray-100'; // Black: All Prohibited (>= 25 knots)
+  // Dark-mode backgrounds use solid (no alpha) colors so they don't mix with
+  // the section's parent background. Shades are kept deep (-900 / -950) so
+  // the cells read as muted color hints rather than glowing swatches.
+  if (windKnots < 5) return 'border-blue-400 dark:border-blue-800 bg-blue-100 dark:bg-blue-950 text-blue-900 dark:text-blue-200'; // Pale Blue: Weak wind
+  if (windKnots >= 5 && windKnots <= 14) return 'border-green-400 dark:border-green-800 bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-200'; // Green: Optimal
+  if (windKnots >= 15 && windKnots <= 19) return 'border-yellow-400 dark:border-yellow-700 bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'; // Yellow: Restricted
+  if (windKnots >= 20 && windKnots <= 24) return 'border-red-400 dark:border-red-800 bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-200';     // Red: No Flying Scots
+  return 'border-black dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-gray-200'; // Black: All Prohibited (>= 25 knots)
 };
 
 // Determine wind restriction for policy box
@@ -106,7 +109,19 @@ export default async function Conditions() {
         )}
         <div className={`text-[10px] font-black uppercase leading-tight ${isDaytime ? 'text-slate-700 dark:text-slate-400' : 'text-slate-400 dark:text-slate-600'}`}>{relativeLabel}</div>
         <div className={`text-[10px] font-bold uppercase mb-1 leading-tight ${isDaytime ? 'text-slate-600 dark:text-slate-500' : 'text-slate-400 dark:text-slate-700'}`}>{localLabel}</div>
-        <div className="font-extrabold text-xl leading-none">{windSpeed}{windGust > 0 ? `(${windGust})` : ''}</div>
+        {/* Sustained wind is always centered in the cell. Gust (when present)
+            is positioned absolutely to its right so it does not influence the
+            sustained number's alignment. Both inherit the cell's severity
+            text color so they always share the same color, derived from
+            max(sustained, gust) above. */}
+        <div className="flex items-start justify-center leading-none mt-1.5 mb-1.5">
+          <span className="relative font-extrabold text-xl">
+            {windSpeed}
+            {windGust > 0 && windGust > windSpeed && (
+              <span className="absolute left-full top-0 ml-0.5 text-[9px] font-bold tracking-tighter opacity-90 whitespace-nowrap">G{windGust}</span>
+            )}
+          </span>
+        </div>
         <div className="text-[10px] font-bold mt-1 opacity-80">kts</div>
       </div>
     );
@@ -157,8 +172,8 @@ export default async function Conditions() {
   };
 
   return (
-    <section className="bg-white dark:bg-blue-900 text-slate-900 dark:text-white p-6 rounded-xl shadow-lg mb-8 border border-slate-200 dark:border-blue-800 transition-colors duration-300">
-      <h2 className="text-2xl font-bold mb-4 flex items-center border-b border-slate-100 dark:border-blue-700 pb-2 text-blue-900 dark:text-white">
+    <section className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-6 rounded-xl shadow-lg mb-8 border border-slate-200 dark:border-slate-800 transition-colors duration-300">
+      <h2 className="text-2xl font-bold mb-4 flex items-center border-b border-slate-100 dark:border-slate-800 pb-2 text-blue-900 dark:text-slate-100">
         <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
         Current & Forecast Weather Conditions (KDCA)
       </h2>
@@ -166,43 +181,43 @@ export default async function Conditions() {
       {weatherData && renderSCOWPolicyDetails()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-blue-50 dark:bg-blue-800/50 p-4 rounded-lg border border-blue-100 dark:border-blue-700/50">
-          <h3 className="text-blue-700 dark:text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Current Wind</h3>
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+          <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Current Wind</h3>
           <p className={`text-2xl font-semibold ${getWindSeverityClass(currentWindKnots ?? 0)} p-2 rounded shadow-sm`}>
             {currentWindKnots !== null ? formatWind(currentWindKnots, currentWindDirection) : "Loading..."}
           </p>
-          <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+          <p className="text-xs text-blue-600 dark:text-slate-400 mt-1">
             {lastObservedTime && lastObservedValid ?
               `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
           </p>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-800/50 p-4 rounded-lg border border-blue-100 dark:border-blue-700/50">
-          <h3 className="text-blue-700 dark:text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Feels Like Temp</h3>
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+          <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Feels Like Temp</h3>
           <p className="text-2xl font-semibold">
             {weatherData && weatherData.currentApparentTemperatureC !== null ?
               `${Math.round(weatherData.currentApparentTemperatureC)}°C / ${Math.round(weatherData.currentApparentTemperatureF ?? 0)}°F` : "Loading..."}
           </p>
-          <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+          <p className="text-xs text-blue-600 dark:text-slate-400 mt-1">
             {lastObservedTime && lastObservedValid ?
               `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
           </p>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-800/50 p-4 rounded-lg border border-blue-100 dark:border-blue-700/50">
-          <h3 className="text-blue-700 dark:text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Precipitation (8hr)</h3>
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+          <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Precipitation (8hr)</h3>
           <p className="text-2xl font-semibold">
             {weatherData && weatherData.forecast[0] ?
               `${weatherData.forecast.reduce((max, p) => Math.max(max, p.probabilityOfPrecipitation), 0)}%` : "Loading..."}
           </p>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-800/50 p-4 rounded-lg border border-blue-100 dark:border-blue-700/50">
-          <h3 className="text-blue-700 dark:text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Tide Cycle</h3>
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+          <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Tide Cycle</h3>
           <p className="text-2xl font-semibold">
             {tideData?.currentTideCycle ?? "Loading..."}
           </p>
-          <div className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+          <div className="text-xs text-blue-600 dark:text-slate-400 mt-1">
             {tideData?.tideSchedule.map((tide, index) => {
               if (tide.value === -999) return null; // Skip current interpolated time
               const type = tide.type === 'H' ? 'High' : 'Low';
@@ -229,18 +244,18 @@ export default async function Conditions() {
       </div>
 
       <div className="mt-8">
-        <div className="flex items-end justify-between border-b border-slate-100 dark:border-blue-700 pb-2 mb-4">
-          <h3 className="text-xl font-bold flex items-center text-blue-900 dark:text-white">
+        <div className="flex items-end justify-between border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">
+          <h3 className="text-xl font-bold flex items-center text-blue-900 dark:text-slate-100">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2m7.6-7.4A2 2 0 1 1 11 8H2m10.6 11.4A2 2 0 1 0 14 16H2" />
             </svg>
             Wind Forecast (KTS)
           </h3>
-          <span className="text-xs text-blue-600 dark:text-blue-300 italic pb-0.5">
+          <span className="text-xs text-blue-600 dark:text-slate-400 italic pb-0.5">
             {getForecastAgeLabel()}
           </span>
         </div>
-        <div className="flex overflow-x-auto py-2 -mx-6 px-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-blue-700 scrollbar-track-transparent">
+        <div className="flex overflow-x-auto py-2 -mx-6 px-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent">
           {/* Originally Forecast Wind (Strictly from forecast array) */}
           {weatherData?.forecast && (() => {
             const startOfCurrentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours()).getTime();

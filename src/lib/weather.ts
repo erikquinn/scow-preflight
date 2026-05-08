@@ -36,7 +36,47 @@ export interface WeatherData {
 
 // Helper to convert MPH to Knots, rounded for conservatism
 const mphToKnots = (mph: number) => Math.ceil(mph * 0.868976);
+// km/h -> knots (1 kt = 1.852 km/h exactly). Always round UP so any rounding
+// error fails toward "windier than reality" -- never display a wind lower
+// than the true value (safety: high winds are unsafe for sailing).
+const kmhToKnots = (kmh: number) => Math.ceil(kmh / 1.852);
 const cToF = (c: number) => (c * 9/5) + 32;
+
+// Parse an ISO 8601 duration like "PT1H", "PT3H", "P1DT6H" into milliseconds.
+// Supports day and hour components, which is sufficient for NWS grid validTime.
+const parseIsoDurationMs = (dur: string): number => {
+  const match = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(dur);
+  if (!match) return 60 * 60 * 1000; // fall back to 1h
+  const days = parseInt(match[1] || '0', 10);
+  const hours = parseInt(match[2] || '0', 10);
+  const minutes = parseInt(match[3] || '0', 10);
+  return ((days * 24 + hours) * 60 + minutes) * 60 * 1000;
+};
+
+interface GridSeriesPoint { startMs: number; endMs: number; value: number }
+
+// Expand a NWS grid data property (e.g. windSpeed) into a flat list of
+// {start,end,value} ranges in ms.
+const expandGridSeries = (prop: { values?: Array<{ validTime: string; value: number | null }> } | undefined): GridSeriesPoint[] => {
+  if (!prop?.values) return [];
+  const out: GridSeriesPoint[] = [];
+  for (const v of prop.values) {
+    if (v.value === null || v.value === undefined) continue;
+    const [iso, dur] = v.validTime.split('/');
+    const startMs = new Date(iso).getTime();
+    const endMs = startMs + parseIsoDurationMs(dur || 'PT1H');
+    out.push({ startMs, endMs, value: v.value });
+  }
+  return out;
+};
+
+// Find the value covering a given instant (start of an hourly bucket).
+const sampleSeries = (series: GridSeriesPoint[], atMs: number): number | null => {
+  for (const p of series) {
+    if (atMs >= p.startMs && atMs < p.endMs) return p.value;
+  }
+  return null;
+};
 
 export async function getWeatherData(): Promise<WeatherData | null> {
   try {
@@ -95,25 +135,61 @@ export async function getWeatherData(): Promise<WeatherData | null> {
       }
     }
 
-    // 2. Get forecast hourly endpoint URL
+    // 2. Get forecast endpoint URLs
     const pointsRes = await fetch('https://api.weather.gov/points/38.852,-77.037', options);
     if (!pointsRes.ok) throw new Error('Failed to fetch NWS gridpoints');
     const pointsData = await pointsRes.json();
     const forecastHourlyUrl = pointsData.properties.forecastHourly;
+    const forecastGridDataUrl = pointsData.properties.forecastGridData;
 
-    // 3. Fetch hourly forecast
-    const forecastRes = await fetch(forecastHourlyUrl, options);
+    // 3. Fetch hourly forecast and raw grid data in parallel.
+    // - forecastHourly gives nicely-bucketed periods (temp, PoP, isDaytime, etc.)
+    // - forecastGridData gives native-unit (km/h) wind & gust matching the
+    //   "digital forecast" page; using it avoids the kt->mph->kt round-trip
+    //   that biased values upward by ~1 kt.
+    const [forecastRes, gridRes] = await Promise.all([
+      fetch(forecastHourlyUrl, options),
+      fetch(forecastGridDataUrl, options),
+    ]);
     if (!forecastRes.ok) throw new Error('Failed to fetch NWS hourly forecast');
+    if (!gridRes.ok) throw new Error('Failed to fetch NWS grid data');
     const forecastData = await forecastRes.json();
+    const gridData = await gridRes.json();
     const forecastPeriods = forecastData.properties.periods;
+
+    // Build km/h time series for native wind/gust.
+    const windSpeedSeries = expandGridSeries(gridData.properties.windSpeed);
+    const windGustSeries = expandGridSeries(gridData.properties.windGust);
 
     // Filter and process forecast periods
     // We want to find periods starting from 1 hour before now
     const nowMs = new Date().getTime();
 
     const processedForecast: ForecastPeriod[] = forecastPeriods.map((period: any) => {
-      const windSpeedMph = parseFloat(period.windSpeed.split(' ')[0]);
-      const windGustMph = period.windGust ? parseFloat(period.windGust.split(' ')[0]) : 0; // windGust might be missing
+      const periodStartMs = new Date(period.startTime).getTime();
+      // Prefer native km/h grid values for wind/gust; fall back to hourly mph
+      // string only if the grid series doesn't cover this hour.
+      const windKmh = sampleSeries(windSpeedSeries, periodStartMs);
+      const windSpeedKnots = windKmh !== null
+        ? kmhToKnots(windKmh)
+        : mphToKnots(parseFloat(period.windSpeed.split(' ')[0]));
+      // Suppress phantom gusts from rounding noise. The grid windGust series
+      // always carries a value, often only marginally above sustained
+      // (e.g. 11 km/h sustained vs 12 km/h gust would render as "6G7" purely
+      // because of ceiling rounding). Require a meaningful raw delta in km/h
+      // before treating it as a real gust. ~5 km/h ≈ 3 kt, well above the
+      // 1-kt jitter ceiling can introduce. Real forecast gusts are typically
+      // 10+ kt above sustained so this threshold keeps them.
+      const GUST_MIN_DELTA_KMH = 6;
+      const gustKmh = sampleSeries(windGustSeries, periodStartMs);
+      const hasMeaningfulGust = gustKmh !== null && windKmh !== null
+        && (gustKmh - windKmh) >= GUST_MIN_DELTA_KMH;
+      const windGustKnots = hasMeaningfulGust
+        ? kmhToKnots(gustKmh as number)
+        : (gustKmh === null && period.windGust
+            ? mphToKnots(parseFloat(period.windGust.split(' ')[0]))
+            : 0);
+
       const tempF = period.temperature;
       const tempC = (tempF - 32) * 5/9; // Convert forecast temp from F to C
       const apparentTempF = period.temperature;
@@ -122,8 +198,8 @@ export async function getWeatherData(): Promise<WeatherData | null> {
       return {
         startTime: period.startTime,
         endTime: period.endTime,
-        windSpeed: mphToKnots(windSpeedMph),
-        windGust: mphToKnots(windGustMph),
+        windSpeed: windSpeedKnots,
+        windGust: windGustKnots,
         temperature: tempC,
         temperatureUnit: 'C',
         apparentTemperature: apparentTempC,
