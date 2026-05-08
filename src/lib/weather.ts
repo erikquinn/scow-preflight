@@ -7,6 +7,7 @@ export interface ForecastPeriod {
   temperatureUnit: string;
   apparentTemperature: number;
   probabilityOfPrecipitation: number;
+  isDaytime: boolean;
 }
 
 export interface WeatherData {
@@ -26,6 +27,7 @@ export interface WeatherData {
     windSpeed: number; // knots
     windDirection: number;
     relativeLabel: string;
+    isDaytime: boolean;
   }>
 
   forecast: ForecastPeriod[];
@@ -48,7 +50,7 @@ export async function getWeatherData(): Promise<WeatherData | null> {
     const features = obsData.features || [];
     const latestObs = features[0]?.properties;
 
-    const pastObs: Array<{ time: string; windSpeed: number; windDirection: number; relativeLabel: string }> = [];
+    const pastObs: Array<{ time: string; windSpeed: number; windDirection: number; relativeLabel: string; isDaytime: boolean }> = [];
     if (latestObs) {
       const latestTime = new Date(latestObs.timestamp).getTime();
 
@@ -76,7 +78,8 @@ export async function getWeatherData(): Promise<WeatherData | null> {
           time: obsMinus2.timestamp,
           windSpeed: mphToKnots((obsMinus2.windSpeed?.value || 0) * 0.621371),
           windDirection: obsMinus2.windDirection?.value || 0,
-          relativeLabel: '-2H'
+          relativeLabel: '-2H',
+          isDaytime: !!obsMinus2.icon?.includes('/day/'), // Heuristic for observations
         });
       }
 
@@ -86,7 +89,8 @@ export async function getWeatherData(): Promise<WeatherData | null> {
           time: obsMinus1.timestamp,
           windSpeed: mphToKnots((obsMinus1.windSpeed?.value || 0) * 0.621371),
           windDirection: obsMinus1.windDirection?.value || 0,
-          relativeLabel: '-1H'
+          relativeLabel: '-1H',
+          isDaytime: !!obsMinus1.icon?.includes('/day/'),
         });
       }
     }
@@ -103,14 +107,15 @@ export async function getWeatherData(): Promise<WeatherData | null> {
     const forecastData = await forecastRes.json();
     const forecastPeriods = forecastData.properties.periods;
 
-    const processedForecast: ForecastPeriod[] = forecastPeriods.slice(0, 8).map((period: any) => {
+    // Filter and process forecast periods
+    // We want to find periods starting from 1 hour before now
+    const nowMs = new Date().getTime();
+
+    const processedForecast: ForecastPeriod[] = forecastPeriods.map((period: any) => {
       const windSpeedMph = parseFloat(period.windSpeed.split(' ')[0]);
       const windGustMph = period.windGust ? parseFloat(period.windGust.split(' ')[0]) : 0; // windGust might be missing
       const tempF = period.temperature;
       const tempC = (tempF - 32) * 5/9; // Convert forecast temp from F to C
-
-      // NWS hourly forecast has 'temperature', but not explicitly 'apparentTemperature' or 'feelsLike'.
-      // Using temperature as apparent temperature for now.
       const apparentTempF = period.temperature;
       const apparentTempC = (apparentTempF - 32) * 5/9;
 
@@ -123,10 +128,12 @@ export async function getWeatherData(): Promise<WeatherData | null> {
         temperatureUnit: 'C',
         apparentTemperature: apparentTempC,
         probabilityOfPrecipitation: period.probabilityOfPrecipitation?.value ?? 0,
+        isDaytime: period.isDaytime,
       };
     });
 
-    const maxForecastWind = Math.max(...processedForecast.map(p => Math.max(p.windSpeed, p.windGust)));
+    // We'll return the full list and let the component decide which ones to show (-1H, Now, etc.)
+    const maxForecastWind = Math.max(...processedForecast.slice(0, 10).map(p => Math.max(p.windSpeed, p.windGust)));
 
     return {
       retrievedAt: new Date().toISOString(),

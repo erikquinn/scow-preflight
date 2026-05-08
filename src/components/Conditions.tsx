@@ -25,35 +25,35 @@ const getWindSeverityClass = (windKnots: number) => {
 // Determine wind restriction for policy box
 const getPolicyRestriction = (maxWindKnots: number) => {
   if (maxWindKnots < 5) {
-    return { 
-      color: 'bg-blue-700 dark:bg-blue-800 shadow-blue-200 dark:shadow-none', 
+    return {
+      color: 'bg-blue-700 dark:bg-blue-800 shadow-blue-200 dark:shadow-none',
       text: 'Weak Wind Conditions',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     };
   }
   if (maxWindKnots >= 5 && maxWindKnots <= 14) {
-    return { 
-      color: 'bg-green-700 dark:bg-green-800 shadow-green-200 dark:shadow-none', 
+    return {
+      color: 'bg-green-700 dark:bg-green-800 shadow-green-200 dark:shadow-none',
       text: 'Optimal Sailing Conditions',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
     };
   }
   if (maxWindKnots >= 15 && maxWindKnots <= 19) {
-    return { 
-      color: 'bg-yellow-600 dark:bg-yellow-800 shadow-yellow-200 dark:shadow-none', 
+    return {
+      color: 'bg-yellow-600 dark:bg-yellow-800 shadow-yellow-200 dark:shadow-none',
       text: 'Restricted Daysailer Conditions',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     };
   }
   if (maxWindKnots >= 20 && maxWindKnots <= 24) {
-    return { 
-      color: 'bg-red-700 dark:bg-red-800 shadow-red-200 dark:shadow-none', 
+    return {
+      color: 'bg-red-700 dark:bg-red-800 shadow-red-200 dark:shadow-none',
       text: 'Flying Scots Prohibited',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     };
   }
-  return { 
-    color: 'bg-slate-800 dark:bg-slate-900 shadow-gray-200 dark:shadow-none', 
+  return {
+    color: 'bg-slate-800 dark:bg-slate-900 shadow-gray-200 dark:shadow-none',
     text: 'All Boats Prohibited',
     icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
   };
@@ -87,13 +87,24 @@ export default async function Conditions() {
     return `${speedKnots} kts ${compassDir}`;
   };
 
-  const renderWindCell = (relativeLabel: string, localLabel: string, windSpeed: number, windGust: number, time: string, isCurrent: boolean = false) => {
+  const renderWindCell = (relativeLabel: string, localLabel: string, windSpeed: number, windGust: number, time: string, isEmphasis: boolean = false, isDaytime: boolean = true) => {
     const maxWind = Math.max(windSpeed, windGust);
-    const severityClass = getWindSeverityClass(maxWind);
+    let severityClass = getWindSeverityClass(maxWind);
+
+    // Deemphasize night blocks
+    if (!isDaytime) {
+      severityClass = 'bg-slate-200 dark:bg-slate-900 border-slate-300 dark:border-slate-800 text-slate-400 dark:text-slate-600 grayscale opacity-60';
+    }
+
     return (
-      <div key={time} className={`flex-shrink-0 w-20 p-2 border-l first:border-l-0 border-slate-300 dark:border-slate-700 text-center ${severityClass} transition-colors duration-300`}>
-        <div className="text-[10px] font-black uppercase text-slate-700 dark:text-slate-400 leading-tight">{relativeLabel}</div>
-        <div className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-500 mb-1 leading-tight">{localLabel}</div>
+      <div key={time} className={`flex-shrink-0 w-20 p-2 border-l first:border-l-0 border-slate-300 dark:border-slate-700 text-center ${severityClass} transition-colors duration-300 ${isEmphasis ? 'ring-2 ring-blue-500 ring-inset relative z-10' : ''}`}>
+        {isEmphasis && (
+          <div className="absolute -top-1 left-1/2 -translate-x-1/2 bg-blue-500 text-[8px] font-black text-white px-1 rounded-sm uppercase tracking-tighter">
+            NOW
+          </div>
+        )}
+        <div className={`text-[10px] font-black uppercase leading-tight ${isDaytime ? 'text-slate-700 dark:text-slate-400' : 'text-slate-400 dark:text-slate-600'}`}>{relativeLabel}</div>
+        <div className={`text-[10px] font-bold uppercase mb-1 leading-tight ${isDaytime ? 'text-slate-600 dark:text-slate-500' : 'text-slate-400 dark:text-slate-700'}`}>{localLabel}</div>
         <div className="font-extrabold text-xl leading-none">{windSpeed}{windGust > 0 ? `(${windGust})` : ''}</div>
         <div className="text-[10px] font-bold mt-1 opacity-80">kts</div>
       </div>
@@ -210,11 +221,13 @@ export default async function Conditions() {
       <div className="mt-8">
         <div className="flex items-end justify-between border-b border-slate-100 dark:border-blue-700 pb-2 mb-4">
           <h3 className="text-xl font-bold flex items-center text-blue-900 dark:text-white">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.99 7.99 0 0120 13a7.99 7.99 0 01-2.343 5.657z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" /></svg>
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.75 12h14.5M4.75 8.25h14.5M4.75 15.75h14.5" />
+            </svg>
             Wind Forecast (KTS)
           </h3>
           <span className="text-xs text-blue-600 dark:text-blue-300 italic pb-0.5">
-            Generated: {forecastGeneratedValid && forecastGeneratedTime ? `${formatTime(forecastGeneratedTime.toISOString())} on ${formatDate(forecastGeneratedTime.toISOString())}` : 'N/A'}
+            NWS Forecast Generated: {forecastGeneratedValid && forecastGeneratedTime ? `${formatTime(forecastGeneratedTime.toISOString())} on ${formatDate(forecastGeneratedTime.toISOString())}` : 'N/A'}
             {forecastGeneratedTime && ` (${Math.round((new Date().getTime() - forecastGeneratedTime.getTime()) / 3600000)}h ago)`}
           </span>
         </div>
@@ -236,12 +249,14 @@ export default async function Conditions() {
                 const pTime = new Date(period.startTime).getTime();
                 return pTime >= oneHourAgo && pTime <= targetEnd.getTime();
               })
-              .map((period) => renderWindCell(
+              .map((period, index) => renderWindCell(
                 getRelativeHourLabel(period.startTime),
                 formatTime(period.startTime).toLowerCase().replace(':00', '').replace(' ', ''),
                 period.windSpeed,
                 period.windGust,
-                period.startTime
+                period.startTime,
+                index === 1, // Emphasis on the second cell ("now"ish)
+                period.isDaytime
               ));
           })()}
         </div>
@@ -262,7 +277,7 @@ export default async function Conditions() {
                   <td className="py-3 px-3 w-24 text-xs font-semibold text-slate-500 dark:text-slate-400 align-top sm:align-middle hidden sm:table-cell">
                     (&lt; 6 mph)
                   </td>
-                  <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium italic text-xs">
+                  <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium text-xs">
                     Weak Wind (consider whether a falling tide makes it risky to go out!)
                   </td>
                 </tr>

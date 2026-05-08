@@ -76,7 +76,7 @@ export async function getTideData(): Promise<TideData | null> {
       if (totalCycleTime > 0) {
         const percentage = Math.round((timeElapsed / totalCycleTime) * 100);
         const cycleType = (lastTide.type === 'L' && nextTide.type === 'H') ? 'Rising' : 'Falling';
-        currentTideCycle = `${percentage}% ${cycleType}`;
+        currentTideCycle = `${cycleType} (${percentage}%)`;
       } else {
         currentTideCycle = `At ${lastTide.type === 'H' ? 'High' : 'Low'} Tide`;
       }
