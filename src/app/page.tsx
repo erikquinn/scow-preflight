@@ -26,7 +26,13 @@ export default function Home() {
       </main>
 
       <footer className="mt-16 bg-slate-800 text-slate-400 py-6 text-center text-sm">
-        <p>SCOW Preflight Dashboard &copy; {new Date().getFullYear()}</p>
+        <p className="mb-2">Scow Preflight Dashboard &copy; {new Date().getFullYear()}</p>
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-blue-300">
+          <a href="https://scow.org/resources/Bylaws%20and%20policies/Skipper%20Boat%20Use%20Policy/SSRBUP%20Board%20Approved%202026.pdf" target="_blank" rel="noopener noreferrer" className="hover:underline">SCOW SSRBUP</a>
+          <a href="https://scow.org/resources/Skipper%20information/FS%20SIF/FS%20SIF%202025%20AS%20APPROVED%20%20BY%20BOARD%202%2010%202025%20Corrected.pdf" target="_blank" rel="noopener noreferrer" className="hover:underline">Flying Scot SIF</a>
+          <a href="https://forecast.weather.gov/MapClick.php?w3=sfcwind&w3u=1&w13u=0&w16u=1&AheadHour=0&Submit=Submit&FcstType=digital&textField1=38.8491&textField2=-77.0438&site=all&unit=0&dd=&bw=" target="_blank" rel="noopener noreferrer" className="hover:underline">NWS Wind Forecast (KDCA)</a>
+          <a href="https://tide.arthroinfo.org/tideshow.cgi?site=Reagan%2BNational%2BAirport%2C%2BWashington%2C%2BD.C.&units=f" target="_blank" rel="noopener noreferrer" className="hover:underline">Arthroinfo Tides (KDCA)</a>
+        </div>
       </footer>
     </div>
   );
