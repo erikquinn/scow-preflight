@@ -18,7 +18,7 @@ export default function Home() {
 
       <main className="max-w-5xl mx-auto p-4 md:p-8">
         <Conditions />
-        
+
         <section className="mt-12">
           <h2 className="text-2xl font-bold text-blue-900 dark:text-slate-100 mb-6 border-b-2 border-blue-900 dark:border-blue-800 pb-2 uppercase tracking-tight">
             Skipper Checklists
@@ -34,6 +34,7 @@ export default function Home() {
           <a href="https://scow.org/resources/Skipper%20information/FS%20SIF/FS%20SIF%202025%20AS%20APPROVED%20%20BY%20BOARD%202%2010%202025%20Corrected.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 hover:underline font-medium transition-colors">Flying Scot SIF</a>
           <a href="https://forecast.weather.gov/MapClick.php?w3=sfcwind&w3u=1&w13u=0&w16u=1&AheadHour=0&Submit=Submit&FcstType=digital&textField1=38.8491&textField2=-77.0438&site=all&unit=0&dd=&bw=" target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 hover:underline font-medium transition-colors">NWS Wind Forecast</a>
           <a href="https://tide.arthroinfo.org/tideshow.cgi?site=Reagan%2BNational%2BAirport%2C%2BWashington%2C%2BD.C.&units=f" target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 hover:underline font-medium transition-colors">Arthroinfo Tides</a>
+          <a href="https://www.tide-forecast.com/locations/Reagan-National-Airport-Washington-DC/tides/latest" target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 hover:underline font-medium transition-colors">Tide Forecast</a>
         </div>
       </footer>
     </div>

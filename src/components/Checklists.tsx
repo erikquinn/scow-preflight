@@ -132,7 +132,7 @@ export default function Checklists() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end mb-4">
-        <button 
+        <button
           onClick={resetChecklists}
           className="flex items-center gap-2 text-sm font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2 px-4 rounded-lg transition-colors"
         >
@@ -140,7 +140,7 @@ export default function Checklists() {
           Reset All Checklists
         </button>
       </div>
-      
+
       <div className="space-y-6">
         {checklistData.map((category) => {
           // Calculate progress
@@ -151,7 +151,7 @@ export default function Checklists() {
 
           return (
             <div key={category.id} className={`rounded-xl shadow-md border overflow-hidden transition-all duration-300 ${isComplete ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-800' : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-800'}`}>
-              <div 
+              <div
                 className={`p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-300 flex justify-between items-center ${isComplete ? 'border-b border-green-300/50 dark:border-green-800/50' : 'border-b border-slate-200 dark:border-slate-700'}`}
                 onClick={() => toggleCategory(category.id)}
               >
@@ -170,17 +170,17 @@ export default function Checklists() {
                   </span>
                 </div>
               </div>
-              
+
               {isExpanded && (
                 <div className="p-5">
                   <ul className="space-y-4">
                     {category.items.map((item, index) => {
                       const key = `${category.id}-${index}`;
                       const isChecked = !!checkedItems[key];
-                      
+
                       return (
                         <li key={index} className="flex items-start">
-                          <button 
+                          <button
                             className="flex-shrink-0 mt-1 w-7 h-7 rounded border-2 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
                             onClick={() => toggleItem(category.id, index)}
                             aria-checked={isChecked}
@@ -196,7 +196,7 @@ export default function Checklists() {
                               </svg>
                             )}
                           </button>
-                          <span 
+                          <span
                             className={`ml-4 cursor-pointer select-none transition-all duration-200 text-lg ${isChecked ? 'text-slate-400 dark:text-slate-500 line-through italic' : (isComplete ? 'text-green-900 dark:text-green-100 font-medium' : 'text-slate-800 dark:text-slate-100 font-medium')}`}
                             onClick={() => toggleItem(category.id, index)}
                           >
