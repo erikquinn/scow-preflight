@@ -28,7 +28,7 @@ export async function getTideData(): Promise<TideData | null> {
     };
 
     const apiUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${formatDateTime(startDate)}&end_date=${formatDateTime(endDate)}&station=${stationId}&product=predictions&datum=MLLW&time_zone=gmt&units=english&format=json&interval=hilo`;
-    
+
     const res = await fetch(apiUrl, { next: { revalidate: 300 } });
     if (!res.ok) throw new Error('Failed to fetch NOAA tide predictions');
     const data = await res.json();
@@ -89,7 +89,7 @@ export async function getTideData(): Promise<TideData | null> {
         type: lastTide.type === 'L' && nextTide.type === 'H' ? 'R' : 'F', // R for rising, F for falling
       });
       tideSchedule.push(nextTide);
-      
+
       const nextTideIndex = predictions.findIndex(p => p.time === nextTide?.time);
       if (nextTideIndex !== -1 && predictions[nextTideIndex + 1]) {
         tideSchedule.push(predictions[nextTideIndex + 1]);

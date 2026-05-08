@@ -21,7 +21,7 @@ export default function Home() {
         
         <section className="mt-12">
           <h2 className="text-2xl font-bold text-blue-900 dark:text-slate-100 mb-6 border-b-2 border-blue-900 dark:border-blue-800 pb-2 uppercase tracking-tight">
-            Rigging the Rumba
+            Skipper Checklists
           </h2>
           <Checklists />
         </section>

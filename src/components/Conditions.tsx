@@ -3,7 +3,7 @@ import { getTideData, TideData, TidePrediction } from "@/lib/tides";
 
 const KNOTS_TO_MPH = 1.15078;
 const PFD_MESSAGE = "(All aboard must wear PFDs)";
-const REEF_MESSAGE = "(Daysailers MUST reef, remain in lagoon)";
+const REEF_MESSAGE = "(Flying Scots MUST reef, remain in lagoon)";
 const SOCIAL_SAIL_MESSAGE = "(Social Sail: max 5 people, incl. 2nd skipper/exp crew)";
 
 // Helper to convert knots to MPH
@@ -18,8 +18,8 @@ const getWindSeverityClass = (windKnots: number) => {
   if (windKnots < 5) return 'border-blue-400 dark:border-blue-800 bg-blue-100 dark:bg-blue-950/40 text-blue-900 dark:text-blue-200'; // Pale Blue: Weak wind
   if (windKnots >= 5 && windKnots <= 14) return 'border-green-400 dark:border-green-800 bg-green-100 dark:bg-green-950/40 text-green-900 dark:text-green-200'; // Green: Normal
   if (windKnots >= 15 && windKnots <= 19) return 'border-yellow-400 dark:border-yellow-800 bg-yellow-100 dark:bg-yellow-950/40 text-yellow-900 dark:text-yellow-200'; // Yellow: Restricted
-  if (windKnots >= 20 && windKnots <= 24) return 'border-red-400 dark:border-red-800 bg-red-100 dark:bg-red-950/40 text-red-900 dark:text-red-200';     // Red: No Daysailers
-  return 'border-black dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-gray-100'; // Black: All Restricted (>= 25 knots)
+  if (windKnots >= 20 && windKnots <= 24) return 'border-red-400 dark:border-red-800 bg-red-100 dark:bg-red-950/40 text-red-900 dark:text-red-200';     // Red: No Flying Scots
+  return 'border-black dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-gray-100'; // Black: All Prohibited (>= 25 knots)
 };
 
 // Determine wind restriction for policy box
@@ -34,9 +34,9 @@ const getPolicyRestriction = (maxWindKnots: number) => {
     return { color: 'bg-yellow-600 dark:bg-yellow-800 shadow-yellow-200 dark:shadow-none', text: 'Restricted Daysailer Conditions' };
   }
   if (maxWindKnots >= 20 && maxWindKnots <= 24) {
-    return { color: 'bg-red-700 dark:bg-red-800 shadow-red-200 dark:shadow-none', text: 'Daysailers Restricted' };
+    return { color: 'bg-red-700 dark:bg-red-800 shadow-red-200 dark:shadow-none', text: 'Flying Scots Prohibited' };
   }
-  return { color: 'bg-slate-800 dark:bg-slate-900 shadow-gray-200 dark:shadow-none', text: 'All Boats Restricted' };
+  return { color: 'bg-slate-800 dark:bg-slate-900 shadow-gray-200 dark:shadow-none', text: 'All Boats Prohibited' };
 };
 
 export default async function Conditions() {
@@ -97,7 +97,7 @@ export default async function Conditions() {
             <p className="font-medium">{SOCIAL_SAIL_MESSAGE}</p>
           )}
           {maxWindKnots >= 20 && (
-            <p className="font-medium">Daysailers (Flying Scot) CANNOT SAIL</p>
+            <p className="font-medium">Flying Scots CANNOT SAIL</p>
           )}
            {maxWindKnots >= 25 && (
             <p className="font-medium">Cruising Boats CANNOT SAIL</p>
@@ -126,11 +126,11 @@ export default async function Conditions() {
             {lastObservedTime && lastObservedValid ? `Observed: ${formatTime(lastObservedTime.toISOString())}` : ""}
           </p>
         </div>
-        
+
         <div className="bg-blue-50 dark:bg-blue-800/50 p-4 rounded-lg border border-blue-100 dark:border-blue-700/50">
           <h3 className="text-blue-700 dark:text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Feels Like Temp (Now)</h3>
           <p className="text-2xl font-semibold">
-            {weatherData && weatherData.currentApparentTemperatureC !== null ? 
+            {weatherData && weatherData.currentApparentTemperatureC !== null ?
               `${Math.round(weatherData.currentApparentTemperatureC)}°C / ${Math.round(weatherData.currentApparentTemperatureF ?? 0)}°F` : "Loading..."}
           </p>
         </div>
@@ -138,7 +138,7 @@ export default async function Conditions() {
         <div className="bg-blue-50 dark:bg-blue-800/50 p-4 rounded-lg border border-blue-100 dark:border-blue-700/50">
           <h3 className="text-blue-700 dark:text-blue-200 text-sm font-semibold uppercase tracking-wider mb-1">Precipitation (8hr)</h3>
           <p className="text-2xl font-semibold">
-            {weatherData && weatherData.forecast[0] ? 
+            {weatherData && weatherData.forecast[0] ?
               `${weatherData.forecast.reduce((max, p) => Math.max(max, p.probabilityOfPrecipitation), 0)}%` : "Loading..."}
           </p>
         </div>
@@ -152,17 +152,17 @@ export default async function Conditions() {
             {tideData?.tideSchedule.map((tide, index) => {
               if (tide.value === -999) return null; // Skip current interpolated time
               const type = tide.type === 'H' ? 'High' : 'Low';
-              
+
               // Find the index of the current time marker
               const currentIndex = tideData.tideSchedule.findIndex(p => p.value === -999);
-              
+
               let label = "";
               if (index < currentIndex) {
                 label = `Last ${type}`;
               } else {
                 label = `Next ${type}`;
               }
-              
+
               return <div key={index}>{label} ({formatTime(tide.time)})</div>;
             })}
           </div>
@@ -198,7 +198,7 @@ export default async function Conditions() {
         </div>
         <div className="mt-4 space-y-1">
           <p className="text-xs text-blue-600 dark:text-blue-300">
-            Last Observation: {lastObservedValid && lastObservedTime ? `${formatTime(lastObservedTime.toISOString())}` : 'N/A'} 
+            Last Observation: {lastObservedValid && lastObservedTime ? `${formatTime(lastObservedTime.toISOString())}` : 'N/A'}
             {lastObservedTime && ` (${Math.round((new Date().getTime() - lastObservedTime.getTime()) / 60000)}m ago)`}
             {observationExpectedNext && new Date() > observationExpectedNext && " - [Delayed Update Expected]"}
           </p>
@@ -253,7 +253,7 @@ export default async function Conditions() {
                     (17 - 23 mph)
                   </td>
                   <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
-                    Daysailers <strong className="text-yellow-700 dark:text-yellow-500">MUST reef</strong>, remain in lagoon, <strong className="text-yellow-700 dark:text-yellow-500">ALL aboard wear PFDs</strong>.<br className="hidden sm:block" />
+                    Flying Scots <strong className="text-yellow-700 dark:text-yellow-500">MUST reef</strong>, remain in lagoon, <strong className="text-yellow-700 dark:text-yellow-500">ALL aboard wear PFDs</strong>.<br className="hidden sm:block" />
                     <span className="text-slate-500 dark:text-slate-400 text-xs mt-1 block sm:inline sm:mt-0 sm:ml-1">
                       Social Sail: max 5 people, incl. 2nd skipper/exp crew.
                     </span>
@@ -270,7 +270,7 @@ export default async function Conditions() {
                     (23 - 29 mph)
                   </td>
                   <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium">
-                    Daysailers (Flying Scot) Restricted
+                    Flying Scots Prohibited
                   </td>
                 </tr>
                 <tr className="hover:bg-blue-50/50 dark:hover:bg-blue-800/30 transition-colors">
@@ -284,7 +284,7 @@ export default async function Conditions() {
                     (≥ 29 mph)
                   </td>
                   <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium">
-                    All Boats Restricted
+                    All Boats Prohibited
                   </td>
                 </tr>
               </tbody>

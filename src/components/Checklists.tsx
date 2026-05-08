@@ -8,11 +8,15 @@ const checklistData = [
     title: 'Scot Checkout Checklist',
     description: 'Inspecting the boat, gathering materials, and making log entries as a skipper.',
     items: [
-      'Sign out the boat in the Skipper Log',
-      'Inspect hull for damage or cracks',
-      'Check all required safety gear is present (PFDs, throw cushion, paddle)',
-      'Ensure bailers are on board and functional',
-      'Check standing rigging (shrouds, forestay) for fraying or loose pins'
+      'Review weather conditions and assess sailing outlook',
+      'Review notes from previous skipper checkouts for any maintenance issues',
+      'Check out the boat from the skipper log, including wx and crew information',
+      'If any crew are non-SCOW members, ensure a signed waiver is on file',
+      'Bring Safety Kit, spinnaker bag/pole, two winch cranks, and boating safety certificate to the boat',
+      'Inspect and remove the tie-downs and cover',
+      'Inspect hull, stays, and rigging (check for loose pins/fraying)',
+      'Drain boat, and reinsert drain plug (tail up)',
+      'Secure lifting bridle and proceed to hoist'
     ]
   },
   {
@@ -20,19 +24,22 @@ const checklistData = [
     title: 'Scot Launch Checklist',
     description: 'Getting the boat rigged and in the water.',
     items: [
-      'Remove tie-downs and cover',
-      'Attach rudder and tiller, ensuring safety pin is secured',
-      'Hoist the main sail (ensure boat is head to wind)',
-      'Hoist the jib',
-      'Prepare dock lines and fenders',
-      'Launch the boat off the trailer/hoist safely'
+      'Select a crane whose arm is pointing to windward (plan to utilize the dock to windward)',
+      'Ensure lifting bridle is properly secured and not fouled',
+      'Attach and tension crane hook, then remove belly band and bow hook',
+      'Communicate the procedure with crew, then lift and pivot the boat, to lower the rudder',
+      'Lower the boat into the water, walk it to the windward dock, and tie off'
     ]
   },
   {
-    id: 'pre-takeoff',
-    title: 'Pre-Takeoff Checklist',
+    id: 'before-takeoff',
+    title: 'Before Takeoff Checklist',
     description: 'Final checks before leaving the dock.',
     items: [
+      '***STILL PLACEHOLDER CONTENT HEREAFTER - REVIEW LATER***',
+      'Hoist the main sail (ensure boat is head to wind)',
+      'Hoist the jib',
+      'Gather required safety equipment (PFDs, throw cushion, paddle, bailer, whistle, flashlight)',
       'Centerboard lowered as needed for depth',
       'Rudder fully down and cleated',
       'Mainsheet and jib sheets run free with figure-8 knots',
@@ -102,16 +109,16 @@ export default function Checklists() {
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4">
               <ul className="space-y-4">
                 {category.items.map((item, index) => {
                   const key = `${category.id}-${index}`;
                   const isChecked = !!checkedItems[key];
-                  
+
                   return (
                     <li key={index} className="flex items-start">
-                      <button 
+                      <button
                         className="flex-shrink-0 mt-1 w-7 h-7 rounded border-2 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors shadow-sm"
                         onClick={() => toggleItem(category.id, index)}
                         aria-checked={isChecked}
@@ -127,7 +134,7 @@ export default function Checklists() {
                           </svg>
                         )}
                       </button>
-                      <span 
+                      <span
                         className={`ml-4 cursor-pointer select-none transition-all duration-200 text-lg ${isChecked ? 'text-slate-400 dark:text-slate-500 line-through italic' : 'text-slate-800 dark:text-slate-100 font-medium'}`}
                         onClick={() => toggleItem(category.id, index)}
                       >

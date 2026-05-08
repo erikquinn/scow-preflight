@@ -13,7 +13,7 @@ export interface WeatherData {
   retrievedAt: string; // When this data was retrieved from NWS
   observationTime: string; // When the latest observation was taken
   forecastGeneratedAt: string; // When the forecast was generated
-  
+
   currentWindSpeed: number | null; // in knots
   currentWindDirection: number | null; // in degrees
   currentTemperatureC: number | null; // in Celsius
@@ -47,11 +47,11 @@ export async function getWeatherData(): Promise<WeatherData | null> {
     const obsData = await obsRes.json();
     const features = obsData.features || [];
     const latestObs = features[0]?.properties;
-    
+
     const pastObs: Array<{ time: string; windSpeed: number; windDirection: number; relativeLabel: string }> = [];
     if (latestObs) {
       const latestTime = new Date(latestObs.timestamp).getTime();
-      
+
       const getClosestObs = (targetTimeMs: number) => {
         let closest = null;
         let minDiff = Infinity;
@@ -79,7 +79,7 @@ export async function getWeatherData(): Promise<WeatherData | null> {
           relativeLabel: '-2H'
         });
       }
-      
+
       // Add -1H observation
       if (obsMinus1 && obsMinus1.timestamp !== latestObs.timestamp) {
         pastObs.push({
@@ -125,7 +125,7 @@ export async function getWeatherData(): Promise<WeatherData | null> {
         probabilityOfPrecipitation: period.probabilityOfPrecipitation?.value ?? 0,
       };
     });
-    
+
     const maxForecastWind = Math.max(...processedForecast.map(p => Math.max(p.windSpeed, p.windGust)));
 
     return {
@@ -139,7 +139,7 @@ export async function getWeatherData(): Promise<WeatherData | null> {
       currentTemperatureF: latestObs?.temperature.value ? cToF(latestObs.temperature.value) : null,
       currentApparentTemperatureC: latestObs?.apparentTemperature?.value ?? latestObs?.temperature.value ?? null,
       currentApparentTemperatureF: latestObs?.apparentTemperature?.value ? cToF(latestObs.apparentTemperature.value) : (latestObs?.temperature.value ? cToF(latestObs.temperature.value) : null),
-      
+
       pastObservations: pastObs,
       forecast: processedForecast,
       maxForecastWind: maxForecastWind,
