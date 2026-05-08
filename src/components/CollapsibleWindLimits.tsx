@@ -32,7 +32,7 @@ export default function CollapsibleWindLimits() {
                 <td className="py-3 px-3 w-24 text-xs font-semibold text-slate-500 dark:text-slate-400 align-top sm:align-middle hidden sm:table-cell">
                   (&lt; 12 mph)
                 </td>
-                <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium text-xs">
+                <td className="py-3 pr-5 pl-3 text-slate-700 dark:text-slate-300 font-medium">
                   Weak Wind (consider whether a falling tide makes it risky to go out!)
                 </td>
               </tr>
