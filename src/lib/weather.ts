@@ -25,6 +25,7 @@ export interface WeatherData {
     time: string;
     windSpeed: number; // knots
     windDirection: number;
+    relativeLabel: string;
   }>
 
   forecast: ForecastPeriod[];
@@ -41,15 +42,54 @@ export async function getWeatherData(): Promise<WeatherData | null> {
     const options = { headers: { 'User-Agent': userAgent }, next: { revalidate: 300 } };
 
     // 1. Fetch current and past observations
-    const obsRes = await fetch('https://api.weather.gov/stations/KDCA/observations?limit=3', options); // limit 3 for current + past 2hrs
+    const obsRes = await fetch('https://api.weather.gov/stations/KDCA/observations?limit=12', options); // limit 12 to safely go back 2 hours even with SPECI reports
     if (!obsRes.ok) throw new Error('Failed to fetch NWS observations');
     const obsData = await obsRes.json();
-    const latestObs = obsData.features[0]?.properties;
-    const pastObs = obsData.features.slice(1).map((f: any) => ({ // Skipping the latest
-      time: f.properties.timestamp,
-      windSpeed: mphToKnots(f.properties.windSpeed.value * 0.621371), // NWS uses km/h, convert to mph, then to knots
-      windDirection: f.properties.windDirection.value,
-    })).reverse(); // Reverse to get chronological order
+    const features = obsData.features || [];
+    const latestObs = features[0]?.properties;
+    
+    const pastObs: Array<{ time: string; windSpeed: number; windDirection: number; relativeLabel: string }> = [];
+    if (latestObs) {
+      const latestTime = new Date(latestObs.timestamp).getTime();
+      
+      const getClosestObs = (targetTimeMs: number) => {
+        let closest = null;
+        let minDiff = Infinity;
+        for (let i = 1; i < features.length; i++) {
+          const obs = features[i].properties;
+          const time = new Date(obs.timestamp).getTime();
+          const diff = Math.abs(time - targetTimeMs);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closest = obs;
+          }
+        }
+        return closest;
+      };
+
+      const obsMinus1 = getClosestObs(latestTime - 3600 * 1000);
+      const obsMinus2 = getClosestObs(latestTime - 2 * 3600 * 1000);
+
+      // Add -2H observation if valid and distinct from -1H
+      if (obsMinus2 && obsMinus2.timestamp !== obsMinus1?.timestamp && obsMinus2.timestamp !== latestObs.timestamp) {
+        pastObs.push({
+          time: obsMinus2.timestamp,
+          windSpeed: mphToKnots((obsMinus2.windSpeed?.value || 0) * 0.621371),
+          windDirection: obsMinus2.windDirection?.value || 0,
+          relativeLabel: '-2H'
+        });
+      }
+      
+      // Add -1H observation
+      if (obsMinus1 && obsMinus1.timestamp !== latestObs.timestamp) {
+        pastObs.push({
+          time: obsMinus1.timestamp,
+          windSpeed: mphToKnots((obsMinus1.windSpeed?.value || 0) * 0.621371),
+          windDirection: obsMinus1.windDirection?.value || 0,
+          relativeLabel: '-1H'
+        });
+      }
+    }
 
     // 2. Get forecast hourly endpoint URL
     const pointsRes = await fetch('https://api.weather.gov/points/38.852,-77.037', options);

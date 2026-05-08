@@ -177,7 +177,7 @@ export default async function Conditions() {
         <div className="flex overflow-x-auto py-2 -mx-6 px-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-blue-700 scrollbar-track-transparent">
           {/* Past Observations */}
           {weatherData?.pastObservations.map((obs, index) => renderWindCell(
-            `-${weatherData.pastObservations.length - index}H`,
+            obs.relativeLabel,
             formatTime(obs.time).toLowerCase().replace(':00', '').replace(' ', ''),
             obs.windSpeed, 0, obs.time
           ))}
