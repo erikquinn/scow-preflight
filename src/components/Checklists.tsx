@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, RotateCcw, CheckSquare } from 'lucide-react';
 
 const checklistData = [
   {
@@ -78,11 +78,11 @@ const checklistData = [
 export default function Checklists() {
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    checkout: true,
-    launch: true,
-    'pre-takeoff': true,
-    'after-landing': true,
-    shutdown: true,
+    checkout: false,
+    launch: false,
+    'pre-takeoff': false,
+    'after-landing': false,
+    shutdown: false,
   });
   const [isMounted, setIsMounted] = useState(false);
 
@@ -119,6 +119,17 @@ export default function Checklists() {
       ...prev,
       [categoryId]: !prev[categoryId]
     }));
+  };
+
+  const checkAllInCategory = (e: React.MouseEvent, categoryId: string, itemsLength: number) => {
+    e.stopPropagation(); // prevent collapsing the category
+    setCheckedItems(prev => {
+      const next = { ...prev };
+      for (let i = 0; i < itemsLength; i++) {
+        next[`${categoryId}-${i}`] = true;
+      }
+      return next;
+    });
   };
 
   const resetChecklists = () => {
@@ -164,7 +175,17 @@ export default function Checklists() {
                     <p className={`text-sm mt-1 font-medium ${isComplete ? 'text-green-700 dark:text-green-400' : 'text-slate-600 dark:text-slate-400'}`}>{category.description}</p>
                   </div>
                 </div>
-                <div className="text-right shrink-0 ml-4">
+                <div className="text-right shrink-0 ml-4 flex items-center gap-3">
+                  {!isComplete && (
+                    <button
+                      onClick={(e) => checkAllInCategory(e, category.id, totalItems)}
+                      className="text-xs flex items-center gap-1.5 font-bold bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 px-3 py-1.5 rounded-full transition-colors shadow-sm"
+                      title="Check all items"
+                    >
+                      <CheckSquare className="w-3.5 h-3.5" />
+                      Check All
+                    </button>
+                  )}
                   <span className={`text-sm font-bold px-3 py-1.5 rounded-full ${isComplete ? 'bg-green-500 dark:bg-green-600 text-white shadow-sm' : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300'}`}>
                     {checkedCount} / {totalItems}
                   </span>
