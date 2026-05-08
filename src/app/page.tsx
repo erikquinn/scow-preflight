@@ -11,7 +11,7 @@ export default function Home() {
           <svg className="w-8 h-8 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h1 className="text-3xl font-extrabold tracking-tight">SCOW Preflight</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">SCOW Skipper Preflight</h1>
         </div>
         <ThemeToggle />
       </header>
@@ -28,7 +28,7 @@ export default function Home() {
       </main>
 
       <footer className="mt-16 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 py-10 text-center text-sm border-t border-slate-200 dark:border-slate-800 transition-colors duration-300">
-        <p className="mb-4 font-semibold text-slate-700 dark:text-slate-300 tracking-wide uppercase">SCOW Preflight Dashboard &copy; {new Date().getFullYear()}</p>
+        <p className="mb-4 font-semibold text-slate-700 dark:text-slate-300 tracking-wide uppercase">SCOW Skipper Preflight Dashboard &copy; {new Date().getFullYear()}</p>
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 px-4">
           <a href="https://scow.org/resources/Bylaws%20and%20policies/Skipper%20Boat%20Use%20Policy/SSRBUP%20Board%20Approved%202026.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 hover:underline font-medium transition-colors">SCOW SSRBUP</a>
           <a href="https://scow.org/resources/Skipper%20information/FS%20SIF/FS%20SIF%202025%20AS%20APPROVED%20%20BY%20BOARD%202%2010%202025%20Corrected.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200 hover:underline font-medium transition-colors">Flying Scot SIF</a>
