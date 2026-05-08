@@ -26,6 +26,15 @@ const getWindSeverityClass = (windKnots: number) => {
   return 'border-black dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-gray-200'; // Black: All Prohibited (>= 25 knots)
 };
 
+// Severity styling for precipitation probability (max over forecast window).
+// Mirrors the wind severity palette and dark-mode treatment.
+const getPrecipSeverityClass = (precipPct: number) => {
+  if (precipPct > 80) return 'border-black dark:border-slate-600 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-gray-200';
+  if (precipPct >= 50) return 'border-red-400 dark:border-red-800 bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-200';
+  if (precipPct >= 25) return 'border-yellow-400 dark:border-yellow-700 bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100';
+  return ''; // No styling below 25%
+};
+
 // Determine wind restriction for policy box
 const getPolicyRestriction = (maxWindKnots: number) => {
   if (maxWindKnots < 5) {
@@ -181,39 +190,53 @@ export default async function Conditions() {
       {weatherData && renderSCOWPolicyDetails()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60 text-center flex flex-col">
           <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Current Wind</h3>
-          <p className={`text-2xl font-semibold ${getWindSeverityClass(currentWindKnots ?? 0)} p-2 rounded shadow-sm`}>
-            {currentWindKnots !== null ? formatWind(currentWindKnots, currentWindDirection) : "Loading..."}
-          </p>
-          <p className="text-xs text-blue-600 dark:text-slate-400 mt-1">
-            {lastObservedTime && lastObservedValid ?
-              `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
-          </p>
+          <div className="flex-1 flex flex-col justify-center">
+            <p className={`text-2xl font-semibold inline-block self-center ${getWindSeverityClass(currentWindKnots ?? 0)} px-3 py-2 rounded shadow-sm`}>
+              {currentWindKnots !== null ? formatWind(currentWindKnots, currentWindDirection) : "Loading..."}
+            </p>
+            <p className="text-xs text-blue-600 dark:text-slate-400 mt-1">
+              {lastObservedTime && lastObservedValid ?
+                `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
+            </p>
+          </div>
         </div>
 
-        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60 text-center flex flex-col">
           <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Feels Like Temp</h3>
-          <p className="text-2xl font-semibold">
-            {weatherData && weatherData.currentApparentTemperatureC !== null ?
-              `${Math.round(weatherData.currentApparentTemperatureC)}°C / ${Math.round(weatherData.currentApparentTemperatureF ?? 0)}°F` : "Loading..."}
-          </p>
-          <p className="text-xs text-blue-600 dark:text-slate-400 mt-1">
-            {lastObservedTime && lastObservedValid ?
-              `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
-          </p>
+          <div className="flex-1 flex flex-col justify-center">
+            <p className="text-2xl font-semibold">
+              {weatherData && weatherData.currentApparentTemperatureC !== null ?
+                `${Math.round(weatherData.currentApparentTemperatureC)}°C / ${Math.round(weatherData.currentApparentTemperatureF ?? 0)}°F` : "Loading..."}
+            </p>
+            <p className="text-xs text-blue-600 dark:text-slate-400 mt-1">
+              {lastObservedTime && lastObservedValid ?
+                `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
+            </p>
+          </div>
         </div>
 
-        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60 text-center flex flex-col">
           <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Precipitation (8hr)</h3>
-          <p className="text-2xl font-semibold">
-            {weatherData && weatherData.forecast[0] ?
-              `${weatherData.forecast.reduce((max, p) => Math.max(max, p.probabilityOfPrecipitation), 0)}%` : "Loading..."}
-          </p>
+          <div className="flex-1 flex flex-col justify-center">
+            {(() => {
+              const precipPct = weatherData?.forecast[0]
+                ? weatherData.forecast.reduce((max, p) => Math.max(max, p.probabilityOfPrecipitation), 0)
+                : null;
+              const severity = precipPct !== null ? getPrecipSeverityClass(precipPct) : '';
+              return (
+                <p className={`text-2xl font-semibold ${severity ? `inline-block self-center ${severity} px-3 py-2 rounded shadow-sm` : ''}`}>
+                  {precipPct !== null ? `${precipPct}%` : "Loading..."}
+                </p>
+              );
+            })()}
+          </div>
         </div>
 
-        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60">
+        <div className="bg-blue-50 dark:bg-slate-800/60 p-4 rounded-lg border border-blue-100 dark:border-slate-700/60 text-center flex flex-col">
           <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Tide Cycle</h3>
+          <div className="flex-1 flex flex-col justify-center">
           <p className="text-2xl font-semibold">
             {tideData?.currentTideCycle ?? "Loading..."}
           </p>
@@ -239,6 +262,7 @@ export default async function Conditions() {
                 </div>
               );
             })}
+          </div>
           </div>
         </div>
       </div>
