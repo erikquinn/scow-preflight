@@ -146,6 +146,15 @@ export default async function Conditions() {
     );
   };
 
+  const getForecastAgeLabel = () => {
+    if (!forecastGeneratedTime || !forecastGeneratedValid) return "N/A";
+    const diffMs = now.getTime() - forecastGeneratedTime.getTime();
+    const hours = Math.floor(diffMs / 3600000);
+    const minutes = Math.floor((diffMs % 3600000) / 60000);
+    const timeStr = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    return `NWS Forecast Issued: ${timeStr} ago`;
+  };
+
   return (
     <section className="bg-white dark:bg-blue-900 text-slate-900 dark:text-white p-6 rounded-xl shadow-lg mb-8 border border-slate-200 dark:border-blue-800 transition-colors duration-300">
       <h2 className="text-2xl font-bold mb-4 flex items-center border-b border-slate-100 dark:border-blue-700 pb-2 text-blue-900 dark:text-white">
@@ -222,13 +231,12 @@ export default async function Conditions() {
         <div className="flex items-end justify-between border-b border-slate-100 dark:border-blue-700 pb-2 mb-4">
           <h3 className="text-xl font-bold flex items-center text-blue-900 dark:text-white">
             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.75 12h14.5M4.75 8.25h14.5M4.75 15.75h14.5" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2m7.6-7.4A2 2 0 1 1 11 8H2m10.6 11.4A2 2 0 1 0 14 16H2" />
             </svg>
             Wind Forecast (KTS)
           </h3>
           <span className="text-xs text-blue-600 dark:text-blue-300 italic pb-0.5">
-            NWS Forecast Generated: {forecastGeneratedValid && forecastGeneratedTime ? `${formatTime(forecastGeneratedTime.toISOString())} on ${formatDate(forecastGeneratedTime.toISOString())}` : 'N/A'}
-            {forecastGeneratedTime && ` (${Math.round((new Date().getTime() - forecastGeneratedTime.getTime()) / 3600000)}h ago)`}
+            {getForecastAgeLabel()}
           </span>
         </div>
         <div className="flex overflow-x-auto py-2 -mx-6 px-6 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-blue-700 scrollbar-track-transparent">
