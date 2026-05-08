@@ -209,7 +209,16 @@ export async function getWeatherData(): Promise<WeatherData | null> {
     });
 
     // We'll return the full list and let the component decide which ones to show (-1H, Now, etc.)
-    const maxForecastWind = Math.max(...processedForecast.slice(0, 10).map(p => Math.max(p.windSpeed, p.windGust)));
+    // Policy banner uses the worst (sustained or gust) wind over the next 6 hours.
+    const sixHoursMs = 6 * 60 * 60 * 1000;
+    const horizonMs = nowMs + sixHoursMs;
+    const upcoming = processedForecast.filter(p => {
+      const t = new Date(p.startTime).getTime();
+      return t >= nowMs - 60 * 60 * 1000 && t <= horizonMs; // include the current hour
+    });
+    const maxForecastWind = upcoming.length > 0
+      ? Math.max(...upcoming.map(p => Math.max(p.windSpeed, p.windGust)))
+      : 0;
 
     return {
       retrievedAt: new Date().toISOString(),

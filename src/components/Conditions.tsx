@@ -31,34 +31,34 @@ const getPolicyRestriction = (maxWindKnots: number) => {
   if (maxWindKnots < 5) {
     return {
       color: 'bg-blue-700 dark:bg-blue-800 shadow-blue-200 dark:shadow-none',
-      text: 'Weak Wind Conditions',
+      text: 'Weak Wind',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     };
   }
   if (maxWindKnots >= 5 && maxWindKnots <= 14) {
     return {
       color: 'bg-green-700 dark:bg-green-800 shadow-green-200 dark:shadow-none',
-      text: 'Optimal Sailing Conditions',
+      text: 'Optimal Wind',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
     };
   }
   if (maxWindKnots >= 15 && maxWindKnots <= 19) {
     return {
       color: 'bg-yellow-600 dark:bg-yellow-800 shadow-yellow-200 dark:shadow-none',
-      text: 'Restricted Daysailer Conditions',
+      text: 'Lagoon Only',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     };
   }
   if (maxWindKnots >= 20 && maxWindKnots <= 24) {
     return {
       color: 'bg-red-700 dark:bg-red-800 shadow-red-200 dark:shadow-none',
-      text: 'Flying Scots Prohibited',
+      text: 'High Winds',
       icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
     };
   }
   return {
     color: 'bg-slate-800 dark:bg-slate-900 shadow-gray-200 dark:shadow-none',
-    text: 'All Boats Prohibited',
+    text: 'Gale Winds',
     icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
   };
 };
@@ -142,7 +142,7 @@ export default async function Conditions() {
       <div className={`p-4 rounded-lg flex items-center justify-between shadow-sm ${policy.color} text-white mb-6`}>
         <div className="flex items-center">
           {policy.icon}
-          <h3 className="font-bold text-lg">{policy.text}</h3>
+          <h3 className="font-bold text-lg">Next 6 hrs: {policy.text}</h3>
         </div>
         <div className="text-right text-sm">
           {maxWindKnots >= 15 && (
