@@ -274,8 +274,15 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
           <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Precipitation (8hr)</h3>
           <div className="flex-1 flex flex-col justify-center">
             {(() => {
+              const nowMs = Date.now();
+              const eightHoursMs = nowMs + 8 * 60 * 60 * 1000;
               const precipPct = weatherData?.forecast[0]
-                ? weatherData.forecast.reduce((max, p) => Math.max(max, p.probabilityOfPrecipitation), 0)
+                ? weatherData.forecast
+                    .filter(p => {
+                      const t = new Date(p.startTime).getTime();
+                      return t >= nowMs && t <= eightHoursMs;
+                    })
+                    .reduce((max, p) => Math.max(max, p.probabilityOfPrecipitation), 0)
                 : null;
               const severity = precipPct !== null ? getPrecipSeverityClass(precipPct) : '';
               return (
