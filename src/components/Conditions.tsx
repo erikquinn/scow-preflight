@@ -253,6 +253,7 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
               {lastObservedTime && lastObservedValid ?
                 `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
             </p>
+            <p className="text-xs text-blue-400 dark:text-slate-500 mt-0.5">NWS KDCA observation</p>
           </div>
         </div>
 
@@ -267,6 +268,7 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
               {lastObservedTime && lastObservedValid ?
                 `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
             </p>
+            <p className="text-xs text-blue-400 dark:text-slate-500 mt-0.5">NWS KDCA observation</p>
           </div>
         </div>
 
@@ -286,9 +288,12 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
                 : null;
               const severity = precipPct !== null ? getPrecipSeverityClass(precipPct) : '';
               return (
-                <p className={`text-2xl font-semibold ${severity ? `inline-block self-center ${severity} px-3 py-2 rounded shadow-sm` : ''}`}>
-                  {precipPct !== null ? `${precipPct}%` : "Loading..."}
-                </p>
+                <>
+                  <p className={`text-2xl font-semibold ${severity ? `inline-block self-center ${severity} px-3 py-2 rounded shadow-sm` : ''}`}>
+                    {precipPct !== null ? `${precipPct}%` : "Loading..."}
+                  </p>
+                  <p className="text-xs text-blue-400 dark:text-slate-500 mt-1">NWS hourly forecast</p>
+                </>
               );
             })()}
           </div>
@@ -300,6 +305,7 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
           <p className="text-2xl font-semibold">
             {tideData?.currentTideCycle ?? "Loading..."}
           </p>
+          <p className="text-xs text-blue-400 dark:text-slate-500 mt-0.5 mb-1">NOAA Tides &amp; Currents</p>
           <div className="text-xs text-blue-600 dark:text-slate-400 mt-1">
             {tideData?.tideSchedule.map((tide, index) => {
               if (tide.value === -999) return null; // Skip current interpolated time
