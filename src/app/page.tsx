@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Conditions from "@/components/Conditions";
 import Checklists from "@/components/Checklists";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -16,9 +17,7 @@ export default async function Home() {
     <div className="min-h-screen bg-white dark:bg-slate-950 font-[family-name:var(--font-geist-sans)] transition-colors duration-300 text-slate-900 dark:text-slate-100">
       <header className="sticky top-0 z-50 bg-blue-900 dark:bg-blue-950 text-white shadow-md py-6 px-4 md:px-8 flex items-center justify-between border-b border-blue-800 dark:border-blue-900">
         <div className="flex items-center gap-3">
-          <svg className="w-8 h-8 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+          <Image src="/icon1.png" alt="" width={32} height={32} className="rounded-lg" />
           <h1 className="text-3xl font-extrabold tracking-tight">SCOW Skipper Preflight</h1>
         </div>
         <ThemeToggle />
