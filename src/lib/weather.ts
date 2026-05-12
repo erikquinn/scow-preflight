@@ -132,18 +132,23 @@ let owmCache: { data: OWMCurrentResponse; fetchedAt: number } | null = null;
 
 async function fetchOWMCurrent(): Promise<OWMCurrentResponse | null> {
   const key = process.env.OPENWEATHERMAP_API_KEY;
-  if (!key) return null;
+  if (!key) { console.warn('[OWM] OPENWEATHERMAP_API_KEY not set — falling back to NWS'); return null; }
   if (owmCache && Date.now() - owmCache.fetchedAt < OWM_TTL_MS) return owmCache.data;
   try {
     const res = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?lat=38.852&lon=-77.037&appid=${key}&units=metric`,
       { cache: 'no-store' }
     );
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error(`[OWM] fetch failed: ${res.status} ${res.statusText}`, body);
+      return null;
+    }
     const data: OWMCurrentResponse = await res.json();
     owmCache = { data, fetchedAt: Date.now() };
     return data;
-  } catch {
+  } catch (err) {
+    console.error('[OWM] fetch threw:', err);
     return null;
   }
 }
