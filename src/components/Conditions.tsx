@@ -260,8 +260,8 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
           <h3 className="text-blue-700 dark:text-slate-300 text-sm font-semibold uppercase tracking-wider mb-1">Feels Like Temp</h3>
           <div className="flex-1 flex flex-col justify-center">
             <p className="text-2xl font-semibold">
-              {weatherData && weatherData.currentApparentTemperatureC !== null ?
-                `${Math.round(weatherData.currentApparentTemperatureC)}°C / ${Math.round(weatherData.currentApparentTemperatureF ?? 0)}°F` : "Loading..."}
+              {weatherData && weatherData.currentFeelsLikeC !== null ?
+                `${Math.round(weatherData.currentFeelsLikeC)}°C / ${Math.round(weatherData.currentFeelsLikeF ?? 0)}°F` : "Loading..."}
             </p>
             <p className="text-xs text-blue-600 dark:text-slate-400 mt-1">
               {lastObservedTime && lastObservedValid ?

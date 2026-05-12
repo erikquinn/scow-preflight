@@ -19,8 +19,8 @@ export interface WeatherData {
   currentWindDirection: number | null; // in degrees
   currentTemperatureC: number | null; // in Celsius
   currentTemperatureF: number | null; // in Fahrenheit
-  currentApparentTemperatureC: number | null;
-  currentApparentTemperatureF: number | null;
+  currentFeelsLikeC: number | null;
+  currentFeelsLikeF: number | null;
 
   pastObservations: Array<{
     time: string;
@@ -77,6 +77,48 @@ const sampleSeries = (series: GridSeriesPoint[], atMs: number): number | null =>
   }
   return null;
 };
+
+// Blended feels-like temperature using NWS formulas where valid, Steadman AT elsewhere.
+// Inputs: tempC (°C), windSpeedKph (km/h from NWS obs), relHumidity (0-100).
+function computeFeelsLike(tempC: number, windSpeedKph: number, relHumidity: number): number {
+  const tempF = tempC * 9 / 5 + 32;
+  const windMph = windSpeedKph * 0.621371;
+  const windMs = windSpeedKph / 3.6;
+
+  // NWS Wind Chill: valid when T ≤ 50°F and wind > 3 mph
+  if (tempF <= 50 && windMph > 3) {
+    const v016 = Math.pow(windMph, 0.16);
+    const wc = 35.74 + 0.6215 * tempF - 35.75 * v016 + 0.4275 * tempF * v016;
+    return (wc - 32) * 5 / 9;
+  }
+
+  // NWS Heat Index (Rothfusz): valid when T ≥ 80°F and RH ≥ 40%
+  if (tempF >= 80 && relHumidity >= 40) {
+    const T = tempF;
+    const R = relHumidity;
+    let hi = -42.379
+      + 2.04901523 * T
+      + 10.14333127 * R
+      - 0.22475541 * T * R
+      - 0.00683783 * T * T
+      - 0.05481717 * R * R
+      + 0.00122874 * T * T * R
+      + 0.00085282 * T * R * R
+      - 0.00000199 * T * T * R * R;
+    // NWS adjustment 1: low RH at high temp
+    if (R < 13 && T >= 80 && T <= 112)
+      hi -= ((13 - R) / 4) * Math.sqrt((17 - Math.abs(T - 95)) / 17);
+    // NWS adjustment 2: high RH in lower heat index range
+    if (R > 85 && T >= 80 && T <= 87)
+      hi += ((R - 85) / 10) * ((87 - T) / 5);
+    return (hi - 32) * 5 / 9;
+  }
+
+  // Steadman Apparent Temperature for the middle range (50–80°F / 10–27°C).
+  // AT = Ta + 0.33e − 0.70ws − 4.00  (e in hPa, ws in m/s)
+  const e = (relHumidity / 100) * 6.1078 * Math.exp(17.27 * tempC / (237.3 + tempC));
+  return tempC + 0.33 * e - 0.70 * windMs - 4.00;
+}
 
 export async function getWeatherData(): Promise<WeatherData | null> {
   try {
@@ -232,8 +274,14 @@ export async function getWeatherData(): Promise<WeatherData | null> {
       currentWindDirection: latestObs?.windDirection.value ?? null,
       currentTemperatureC: latestObs?.temperature.value ?? null,
       currentTemperatureF: latestObs?.temperature.value ? cToF(latestObs.temperature.value) : null,
-      currentApparentTemperatureC: latestObs?.apparentTemperature?.value ?? latestObs?.temperature.value ?? null,
-      currentApparentTemperatureF: latestObs?.apparentTemperature?.value ? cToF(latestObs.apparentTemperature.value) : (latestObs?.temperature.value ? cToF(latestObs.temperature.value) : null),
+      currentFeelsLikeC: (() => {
+        if (!latestObs || latestObs.temperature.value === null || latestObs.relativeHumidity?.value == null) return null;
+        return computeFeelsLike(latestObs.temperature.value, latestObs.windSpeed?.value ?? 0, latestObs.relativeHumidity.value);
+      })(),
+      currentFeelsLikeF: (() => {
+        if (!latestObs || latestObs.temperature.value === null || latestObs.relativeHumidity?.value == null) return null;
+        return cToF(computeFeelsLike(latestObs.temperature.value, latestObs.windSpeed?.value ?? 0, latestObs.relativeHumidity.value));
+      })(),
 
       pastObservations: pastObs,
       forecast: processedForecast,
