@@ -253,7 +253,7 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
               {lastObservedTime && lastObservedValid ?
                 `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
             </p>
-            <p className="text-xs text-blue-400 dark:text-slate-500 mt-0.5">NWS KDCA observation</p>
+            <p className="text-xs text-blue-400 dark:text-slate-500 mt-0.5">{weatherData?.currentWindSource ?? 'NWS KDCA observation'}</p>
           </div>
         </div>
 
@@ -268,7 +268,7 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
               {lastObservedTime && lastObservedValid ?
                 `${Math.round((now.getTime() - lastObservedTime.getTime()) / 60000)} min ago (${formatTime(lastObservedTime.toISOString())})` : ""}
             </p>
-            <p className="text-xs text-blue-400 dark:text-slate-500 mt-0.5">NWS KDCA observation</p>
+            <p className="text-xs text-blue-400 dark:text-slate-500 mt-0.5">{weatherData?.currentWindSource ?? 'NWS KDCA observation'}</p>
           </div>
         </div>
 

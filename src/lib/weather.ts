@@ -21,6 +21,7 @@ export interface WeatherData {
   currentTemperatureF: number | null; // in Fahrenheit
   currentFeelsLikeC: number | null;
   currentFeelsLikeF: number | null;
+  currentWindSource: string; // "OpenWeatherMap" or "NWS KDCA observation"
 
   pastObservations: Array<{
     time: string;
@@ -120,6 +121,33 @@ function computeFeelsLike(tempC: number, windSpeedKph: number, relHumidity: numb
   return tempC + 0.33 * e - 0.70 * windMs - 4.00;
 }
 
+interface OWMCurrentResponse {
+  dt: number; // Unix seconds — when this observation was recorded
+  main: { temp: number; humidity: number };
+  wind: { speed: number; deg: number; gust?: number }; // m/s
+}
+
+const OWM_TTL_MS = 10 * 60 * 1000; // OWM current data refreshes every ~10 min
+let owmCache: { data: OWMCurrentResponse; fetchedAt: number } | null = null;
+
+async function fetchOWMCurrent(): Promise<OWMCurrentResponse | null> {
+  const key = process.env.OPENWEATHERMAP_API_KEY;
+  if (!key) return null;
+  if (owmCache && Date.now() - owmCache.fetchedAt < OWM_TTL_MS) return owmCache.data;
+  try {
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?lat=38.852&lon=-77.037&appid=${key}&units=metric`,
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const data: OWMCurrentResponse = await res.json();
+    owmCache = { data, fetchedAt: Date.now() };
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export async function getWeatherData(): Promise<WeatherData | null> {
   try {
     const userAgent = 'scow-preflight (app@example.com)';
@@ -128,8 +156,13 @@ export async function getWeatherData(): Promise<WeatherData | null> {
     // hits NWS.
     const options = { headers: { 'User-Agent': userAgent }, cache: 'no-store' as const };
 
-    // 1. Fetch current and past observations
-    const obsRes = await fetch('https://api.weather.gov/stations/KDCA/observations?limit=12', options); // limit 12 to safely go back 2 hours even with SPECI reports
+    // 1. Fetch current observations and OWM current weather in parallel.
+    // OWM updates every ~10 min (vs NWS hourly routine); it becomes the source
+    // for currentWind/currentTemp when a key is configured.
+    const [obsRes, owmData] = await Promise.all([
+      fetch('https://api.weather.gov/stations/KDCA/observations?limit=12', options), // limit 12 to safely go back 2 hours even with SPECI reports
+      fetchOWMCurrent(),
+    ]);
     if (!obsRes.ok) throw new Error('Failed to fetch NWS observations');
     const obsData = await obsRes.json();
     const features = obsData.features || [];
@@ -267,21 +300,36 @@ export async function getWeatherData(): Promise<WeatherData | null> {
 
     return {
       retrievedAt: new Date().toISOString(),
-      observationTime: latestObs?.timestamp || '',
+      observationTime: owmData
+        ? new Date(owmData.dt * 1000).toISOString()
+        : (latestObs?.timestamp || ''),
       forecastGeneratedAt: forecastData.properties.generatedAt || forecastData.properties.updated || '',
 
-      currentWindSpeed: latestObs ? mphToKnots(latestObs.windSpeed.value * 0.621371) : null,
-      currentWindDirection: latestObs?.windDirection.value ?? null,
-      currentTemperatureC: latestObs?.temperature.value ?? null,
-      currentTemperatureF: latestObs?.temperature.value ? cToF(latestObs.temperature.value) : null,
+      // Current wind/temp: prefer OWM (~10-min updates) over NWS obs (~hourly).
+      // OWM wind.speed is m/s; convert to knots (ceil preserves safety margin).
+      currentWindSpeed: owmData
+        ? Math.ceil(owmData.wind.speed * 1.944)
+        : (latestObs ? mphToKnots(latestObs.windSpeed.value * 0.621371) : null),
+      currentWindDirection: owmData?.wind.deg ?? latestObs?.windDirection.value ?? null,
+      currentTemperatureC: owmData?.main.temp ?? latestObs?.temperature.value ?? null,
+      currentTemperatureF: owmData
+        ? cToF(owmData.main.temp)
+        : (latestObs?.temperature.value != null ? cToF(latestObs.temperature.value) : null),
       currentFeelsLikeC: (() => {
-        if (!latestObs || latestObs.temperature.value === null || latestObs.relativeHumidity?.value == null) return null;
-        return computeFeelsLike(latestObs.temperature.value, latestObs.windSpeed?.value ?? 0, latestObs.relativeHumidity.value);
+        const tempC = owmData?.main.temp ?? latestObs?.temperature.value ?? null;
+        const windKph = owmData ? owmData.wind.speed * 3.6 : (latestObs?.windSpeed?.value ?? 0);
+        const humidity = owmData?.main.humidity ?? latestObs?.relativeHumidity?.value ?? null;
+        if (tempC === null || humidity === null) return null;
+        return computeFeelsLike(tempC, windKph, humidity);
       })(),
       currentFeelsLikeF: (() => {
-        if (!latestObs || latestObs.temperature.value === null || latestObs.relativeHumidity?.value == null) return null;
-        return cToF(computeFeelsLike(latestObs.temperature.value, latestObs.windSpeed?.value ?? 0, latestObs.relativeHumidity.value));
+        const tempC = owmData?.main.temp ?? latestObs?.temperature.value ?? null;
+        const windKph = owmData ? owmData.wind.speed * 3.6 : (latestObs?.windSpeed?.value ?? 0);
+        const humidity = owmData?.main.humidity ?? latestObs?.relativeHumidity?.value ?? null;
+        if (tempC === null || humidity === null) return null;
+        return cToF(computeFeelsLike(tempC, windKph, humidity));
       })(),
+      currentWindSource: owmData ? 'OpenWeatherMap' : 'NWS KDCA observation',
 
       pastObservations: pastObs,
       forecast: processedForecast,
