@@ -1,19 +1,18 @@
-import { getWeatherData, WeatherData, ForecastPeriod } from "@/lib/weather";
-import { getTideData, TideData, TidePrediction } from "@/lib/tides";
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import type { WeatherData } from "@/lib/weather";
+import type { TideData } from "@/lib/tides";
+import type { ConditionsSnapshot } from "@/lib/weatherCache";
 import CollapsibleWindLimits from "./CollapsibleWindLimits";
 
-const KNOTS_TO_MPH = 1.15078;
 const PFD_MESSAGE = "(All aboard must wear PFDs)";
 const REEF_MESSAGE = "(Flying Scots MUST reef, remain in lagoon)";
 const SOCIAL_SAIL_MESSAGE = "(Social Sail: max 5 people, incl. 2nd skipper/exp crew)";
 
-// Helper to convert knots to MPH
-const knotsToMph = (knots: number) => Math.round(knots * KNOTS_TO_MPH);
-
 // Helper to format date/time in US Eastern Time
 const TIMEZONE = 'America/New_York';
 const formatTime = (isoString: string) => new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
-const formatDate = (isoString: string) => new Date(isoString).toLocaleDateString([], { month: 'short', day: 'numeric', timeZone: TIMEZONE });
 
 const getWindSeverityClass = (windKnots: number) => {
   // Dark-mode backgrounds use solid (no alpha) colors so they don't mix with
@@ -72,17 +71,71 @@ const getPolicyRestriction = (maxWindKnots: number) => {
   };
 };
 
-export default async function Conditions() {
-  const weatherData = await getWeatherData();
-  const tideData = await getTideData();
+interface ConditionsProps {
+  initialSnapshot: ConditionsSnapshot;
+}
+
+export default function Conditions({ initialSnapshot }: ConditionsProps) {
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(initialSnapshot.weather);
+  const [tideData, setTideData] = useState<TideData | null>(initialSnapshot.tide);
+  const snapshotVersionRef = useRef<number>(initialSnapshot.version);
+
+  // `now` is recomputed in state so age labels & "NOW" highlighting update
+  // without a page refresh. We tick it every minute.
+  const [now, setNow] = useState<Date>(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Subscribe to server-pushed snapshots. The server maintains a single
+    // cache shared across all clients; this just listens for changes.
+    const es = new EventSource("/api/conditions");
+
+    const onSnapshot = (e: MessageEvent) => {
+      try {
+        const snap: ConditionsSnapshot = JSON.parse(e.data);
+        // Ignore older snapshots (can happen briefly during reconnect).
+        if (snap.version < snapshotVersionRef.current) return;
+        snapshotVersionRef.current = snap.version;
+        setWeatherData(snap.weather);
+        setTideData(snap.tide);
+      } catch (err) {
+        console.error("conditions SSE parse error", err);
+      }
+    };
+    es.addEventListener("snapshot", onSnapshot as EventListener);
+
+    return () => {
+      es.removeEventListener("snapshot", onSnapshot as EventListener);
+      es.close();
+    };
+  }, []);
+
+  // When the tab regains focus or comes back online, nudge the server to
+  // refresh and push us an updated snapshot. Cheap (cache-deduped) and makes
+  // long-backgrounded tabs catch up instantly.
+  useEffect(() => {
+    const nudge = () => {
+      // Fire-and-forget. The cache TTL ensures this is a no-op when called
+      // rapidly; the SSE channel delivers the eventual update.
+      fetch("/api/conditions?stream=0", { cache: "no-store" }).catch(() => {});
+    };
+    const onVisible = () => { if (document.visibilityState === "visible") nudge(); };
+    window.addEventListener("focus", nudge);
+    window.addEventListener("online", nudge);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", nudge);
+      window.removeEventListener("online", nudge);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   const lastObservedTime = weatherData?.observationTime ? new Date(weatherData.observationTime) : null;
   const forecastGeneratedTime = weatherData?.forecastGeneratedAt ? new Date(weatherData.forecastGeneratedAt) : null;
-  const now = new Date();
-
-  // Add expected update information
-  const observationExpectedNext = lastObservedTime ? new Date(lastObservedTime.getTime() + 60 * 60 * 1000 + 10 * 60 * 1000) : null; // Usually hourly + 10min buffer
-  const forecastExpectedNext = forecastGeneratedTime ? new Date(forecastGeneratedTime.getTime() + 6 * 60 * 60 * 1000) : null; // NWS grids usually every 6 hours
 
   // Ensure dates are valid
   const isValidDate = (d: Date | null) => d instanceof Date && !isNaN(d.getTime());

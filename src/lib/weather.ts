@@ -81,7 +81,10 @@ const sampleSeries = (series: GridSeriesPoint[], atMs: number): number | null =>
 export async function getWeatherData(): Promise<WeatherData | null> {
   try {
     const userAgent = 'scow-preflight (app@example.com)';
-    const options = { headers: { 'User-Agent': userAgent }, next: { revalidate: 300 } };
+    // Freshness is managed by `weatherCache.ts` (TTL + background polling +
+    // SSE fanout). Bypass Next's fetch cache so a forced refresh actually
+    // hits NWS.
+    const options = { headers: { 'User-Agent': userAgent }, cache: 'no-store' as const };
 
     // 1. Fetch current and past observations
     const obsRes = await fetch('https://api.weather.gov/stations/KDCA/observations?limit=12', options); // limit 12 to safely go back 2 hours even with SPECI reports

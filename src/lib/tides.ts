@@ -29,7 +29,8 @@ export async function getTideData(): Promise<TideData | null> {
 
     const apiUrl = `https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${formatDateTime(startDate)}&end_date=${formatDateTime(endDate)}&station=${stationId}&product=predictions&datum=MLLW&time_zone=gmt&units=english&format=json&interval=hilo`;
 
-    const res = await fetch(apiUrl, { next: { revalidate: 300 } });
+    // Freshness is managed by `weatherCache.ts`; bypass Next's fetch cache.
+    const res = await fetch(apiUrl, { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to fetch NOAA tide predictions');
     const data = await res.json();
 

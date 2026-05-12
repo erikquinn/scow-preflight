@@ -1,9 +1,17 @@
-import Image from "next/image";
 import Conditions from "@/components/Conditions";
 import Checklists from "@/components/Checklists";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getSnapshot } from "@/lib/weatherCache";
 
-export default function Home() {
+// Always render on request. The server-side cache module (`weatherCache.ts`)
+// dedupes upstream calls; this just ensures every page load checks for the
+// freshest cached snapshot.
+export const dynamic = "force-dynamic";
+// Disable Next's per-route fetch cache. Freshness is owned by weatherCache.
+export const fetchCache = "force-no-store";
+
+export default async function Home() {
+  const initialSnapshot = await getSnapshot();
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-[family-name:var(--font-geist-sans)] transition-colors duration-300 text-slate-900 dark:text-slate-100">
       <header className="sticky top-0 z-50 bg-blue-900 dark:bg-blue-950 text-white shadow-md py-6 px-4 md:px-8 flex items-center justify-between border-b border-blue-800 dark:border-blue-900">
@@ -17,7 +25,7 @@ export default function Home() {
       </header>
 
       <main className="max-w-5xl mx-auto p-4 md:p-8">
-        <Conditions />
+        <Conditions initialSnapshot={initialSnapshot} />
 
         <section className="mt-12">
           <h2 className="text-2xl font-bold text-blue-900 dark:text-slate-100 mb-6 border-b-2 border-blue-900 dark:border-blue-800 pb-2 uppercase tracking-tight">
