@@ -5,7 +5,9 @@
       "Bash(git commit -m ' *)",
       "WebSearch",
       "Bash(npx tsc *)",
-      "Bash(Get-ChildItem *)"
+      "Bash(Get-ChildItem *)",
+      "WebFetch(domain:openweathermap.org)",
+      "WebFetch(domain:www.weatherapi.com)"
     ]
   }
 }
