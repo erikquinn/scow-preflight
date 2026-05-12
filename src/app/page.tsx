@@ -17,7 +17,7 @@ export default async function Home() {
     <div className="min-h-screen bg-white dark:bg-slate-950 font-[family-name:var(--font-geist-sans)] transition-colors duration-300 text-slate-900 dark:text-slate-100">
       <header className="sticky top-0 z-50 bg-blue-900 dark:bg-blue-950 text-white shadow-md py-6 px-4 md:px-8 flex items-center justify-between border-b border-blue-800 dark:border-blue-900">
         <div className="flex items-center gap-3">
-          <Image src="/icon1.png" alt="" width={32} height={32} className="rounded-lg" />
+          <Image src="/icon1.png" alt="" width={56} height={56} className="rounded-xl ring-2 ring-white/70" />
           <h1 className="text-3xl font-extrabold tracking-tight">SCOW Skipper Preflight</h1>
         </div>
         <ThemeToggle />
