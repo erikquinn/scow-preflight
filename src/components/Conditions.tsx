@@ -6,9 +6,8 @@ import type { TideData } from "@/lib/tides";
 import type { ConditionsSnapshot } from "@/lib/weatherCache";
 import CollapsibleWindLimits from "./CollapsibleWindLimits";
 
-const PFD_MESSAGE = "(All aboard must wear PFDs)";
-const REEF_MESSAGE = "(Flying Scots MUST reef, remain in lagoon)";
-const SOCIAL_SAIL_MESSAGE = "(Social Sail: max 5 people, incl. 2nd skipper/exp crew)";
+const REEF_MESSAGE = "Scots: reef, lagoon only, PFDs mandatory.";
+const SOCIAL_SAIL_MESSAGE = "Social Sail: max 5, w/ 2 skippers/exp crew";
 
 // Helper to format date/time in US Eastern Time
 const TIMEZONE = 'America/New_York';
@@ -65,7 +64,7 @@ const getPolicyRestriction = (maxWindKnots: number) => {
     };
   }
   return {
-    color: 'bg-slate-800 dark:bg-slate-900 shadow-gray-200 dark:shadow-none',
+    color: 'bg-slate-800 dark:bg-slate-100 shadow-gray-200 dark:shadow-none dark:text-slate-900',
     text: 'Gale Winds',
     icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
   };
@@ -207,17 +206,20 @@ export default function Conditions({ initialSnapshot }: ConditionsProps) {
           <h3 className="font-bold text-lg">Next 6 hrs: {policy.text}</h3>
         </div>
         <div className="text-right text-sm">
-          {maxWindKnots >= 15 && (
-            <p className="font-medium">{REEF_MESSAGE} {PFD_MESSAGE}</p>
+          {maxWindKnots >= 15 && maxWindKnots < 20 && (
+            <p className="font-medium">{REEF_MESSAGE}</p>
           )}
-          {maxWindKnots >= 15 && maxWindKnots <= 19 && (
+          {maxWindKnots >= 15 && maxWindKnots < 20 && (
             <p className="font-medium">{SOCIAL_SAIL_MESSAGE}</p>
           )}
-          {maxWindKnots >= 20 && (
-            <p className="font-medium">Flying Scots CANNOT SAIL</p>
+          {maxWindKnots >= 20 && maxWindKnots < 25 && (
+            <p className="font-medium">SCOTS CANNOT SAIL</p>
           )}
            {maxWindKnots >= 25 && (
-            <p className="font-medium">Cruising Boats CANNOT SAIL</p>
+            <p className="font-medium">SCOTS CANNOT SAIL</p>
+          )}
+          {maxWindKnots >= 25 && (
+            <p className="font-medium">CRUISERS CANNOT SAIL</p>
           )}
         </div>
       </div>
