@@ -6,71 +6,64 @@ import { ChevronDown, ChevronUp, RotateCcw, CheckSquare } from 'lucide-react';
 const checklistData = [
   {
     id: 'checkout',
-    title: 'Scot Checkout Checklist',
-    description: 'Inspecting the boat, gathering materials, and making log entries as a skipper.',
+    title: 'Pre-trip & Dock Check',
+    description: 'Planning, gear, and boat inspection before heading to the crane.',
     items: [
-      'Review weather conditions and assess sailing outlook',
-      'Review notes from previous skipper checkouts for any maintenance issues',
-      'Check out the boat from the skipper log, including wx and crew information',
-      'If any crew are non-SCOW members, ensure a signed waiver is on file',
-      'Bring Safety Kit, spinnaker bag/pole, two winch cranks, and boating safety certificate to the boat',
-      'Inspect and remove the tie-downs and cover',
-      'Inspect hull, stays, and rigging (check for loose pins/fraying)',
-      'Drain boat, and reinsert drain plug (tail up)',
-      'Secure lifting bridle and proceed to hoist'
+      'Multitool',
+      'Review wind, tides, rain, cold water, and other hazards',
+      'Go/no-go decision',
+      'Fill out log; get items from locker',
+      'Check hull and rigging',
+      'Onboard gear: bailer, paddle, 6 lifejackets, throwable flotation, throwable lifeline, boat hook, safety kit and radio, anchor',
+      'Confirm crew experience and swimming ability',
     ]
   },
   {
     id: 'launch',
-    title: 'Scot Launch Checklist',
+    title: 'Launch & Rig',
     description: 'Getting the boat rigged and in the water.',
     items: [
-      'Select a crane whose arm is pointing to windward (plan to utilize the dock to windward)',
-      'Ensure lifting bridle is properly secured and not fouled',
-      'Attach and tension crane hook, then remove belly band and bow hook',
-      'Communicate the procedure with crew, then lift and pivot the boat, to lower the rudder',
-      'Lower the boat into the water, walk it to the windward dock, and tie off'
+      'Lift bridle secure (double-check)',
+      'Mini brief: stay on the boat, never between dock and boat',
+      'Lower boat with crane',
+      'Rudder down, moving freely',
+      'Lower centerboard',
+      'Mainsail dropped to port side',
+      'Raise jib, all hanks attached',
     ]
   },
   {
     id: 'before-takeoff',
-    title: 'Before Takeoff Checklist',
-    description: 'Final checks before leaving the dock.',
+    title: 'Safety Brief & Departure',
+    description: 'Final safety briefing and checks before leaving the dock.',
     items: [
-      '***STILL PLACEHOLDER CONTENT HEREAFTER - REVIEW LATER***',
-      'Hoist the main sail (ensure boat is head to wind)',
-      'Hoist the jib',
-      'Gather required safety equipment (PFDs, throw cushion, paddle, bailer, whistle, flashlight)',
-      'Centerboard lowered as needed for depth',
-      'Rudder fully down and cleated',
-      'Mainsheet and jib sheets run free with figure-8 knots',
-      'Check wind direction and plan departure angle',
-      'Crew briefed on their roles and safety procedures',
-      'Cast off bow and stern lines'
+      'Recheck weather conditions',
+      'PFD check',
+      'Radio on',
+      'Sail plan',
+      'Wingtip vortices',
+      'Capsize: account for crew, uncleat everything, two crew at centerboard and one keeps head to wind, float under top of mast',
+      'Run aground: stay on the boat',
     ]
   },
   {
     id: 'after-landing',
-    title: 'After Landing Checklist',
-    description: 'Preparations before hoisting boat out of water at the hoist.',
+    title: 'De-rig',
+    description: 'Preparations before hoisting the boat out at the crane.',
     items: [
-      'Secure boat to dock with bow, stern, and spring lines',
-      'Lower main and jib sails',
-      'Furl or flake sails securely',
-      'Raise centerboard completely',
-      'Raise rudder or remove it entirely before approaching hoist'
+      'Mainsail dropped to starboard side',
     ]
   },
   {
     id: 'shutdown',
-    title: 'Shutdown Checklist',
-    description: 'Securing boat to the trailer after hoisting it out, putting it away, and closing skipper checkout log.',
+    title: 'Recovery & Shutdown',
+    description: 'Pulling the boat out, cleaning up, and returning gear.',
     items: [
-      'Ensure boat is sitting securely and level on the trailer',
-      'Attach all tie-down straps tightly',
-      'Stow sails, rudder, and tiller safely inside or in designated storage',
-      'Install the boat cover securely to prevent water pooling',
-      'Complete the Skipper Log entry, noting any maintenance issues'
+      'Pull boat out of water',
+      'Spray down',
+      'Tidy',
+      'Cover boat',
+      'Return items to locker',
     ]
   }
 ];
